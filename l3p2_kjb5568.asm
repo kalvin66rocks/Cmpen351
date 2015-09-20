@@ -1,7 +1,5 @@
 .data
 storage: .word
-binanswer: .asciiz "\nBinary Answer: "
-hexanswer: .asciiz "\nHexadecimal Answer: "
 prompt: .asciiz "Please enter a number "
 result: .space 8 #space for 8 digit hex to be stored
 
@@ -49,16 +47,11 @@ printdigit:
         syscall
         jr $ra
 fill:
-	beq $t2,32, printans
+	beq $t2,32, print
 	addi $sp, $sp, -4  #moves stack pointer
 	sw $t7, 0($sp)   #loads $t6 into stack
 	add $t2,$t2,1	#increments the counter
 	j fill
-printans:
-	la $a0, binanswer
-	li $v0, 4
-	syscall	
-	j print
 print:    
 	beqz $t2,part2	#branches if loopcounter is 0
 	jal printdigit  #jal to print digit
@@ -72,8 +65,8 @@ part2:
 	la $t3, result      # where answer will be stored
 	move $t2,$s0
 	
-	la $a0, hexanswer
-	li $v0, 4
+	la $a0, 0xa	     #creates a newline for the hex answer to be printed on
+	li $v0, 11
 	syscall
 hex:
 	beqz $t0, done      # branch to exit if counter is equal to zero     
