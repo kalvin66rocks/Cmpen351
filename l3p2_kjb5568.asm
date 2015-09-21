@@ -1,10 +1,12 @@
 .data
 storage: .word
+storage1: .word
 prompt: .asciiz "Please enter a number "
+prompt1: .asciiz "Please enter another number "
 result: .space 8 #space for 8 digit hex to be stored
 
 .text
-
+user_input:
 la $a0,prompt    #loads prompt into $a0
 li $v0,4   #sets up syscall to print the string
 syscall     #syscall
@@ -13,9 +15,21 @@ li $v0,5   #sets up syscall to read in int
 syscall     #syscall
 
 la $t0,storage  #sets the address of $t0 to the addess of storage
-sw $s0,($t0)    #sets the address fo $t0 (storage) to $t9
+sw $s0,($t0)    #sets the address of $t0 (storage) to $t9
 
 move $s0, $v0    #moves read in number to $s0 which is our data storage
+
+la $a0,prompt1    #loads prompt into $a0
+li $v0,4   #sets up syscall to print the string
+syscall     #syscall
+
+li $v0,5   #sets up syscall to read in int
+syscall     #syscall
+
+la $t8,storage1  #sets the address of $t8 to the addess of storage1
+sw $s1,($t8)    #sets the address of $t8 (storage) to $s1
+
+move $s1, $v0    #moves read in number to $s0 which is our data storage
 
 move $t1,$s0	    #moves what the user inputed to $t1 for computation
 addi $t2, $t2, 0     # counter for emptying stack
@@ -63,7 +77,7 @@ print:
 part2: 
 	li $t0, 8           # counter     
 	la $t3, result      # where answer will be stored
-	move $t2,$s0
+	move $t2,$s1
 	
 	la $a0, 0xa	     #creates a newline for the hex answer to be printed on
 	li $v0, 11
