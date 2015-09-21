@@ -82,9 +82,14 @@ sw $s3, 0($t5)
   li   $v0, 16       # system call for close file
   move $a0, $s6      # file descriptor to close
   syscall            # close file
-	li $v0,1
-	move $a0,$s3
-	syscall
+  
+  li $v0,1
+  move $a0,$s3
+  syscall
+  
+  li $v0, 10     # close the program
+  syscall
+
 
 		
 	
