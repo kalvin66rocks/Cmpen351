@@ -44,7 +44,13 @@ main:
 	beq $t0,45, SubNumb
 	beq $t0,42, MultNumb
 	beq $t0,47, DivNumb
+
+bad:
 	
+	la $a0,badInput	                # send the first propmt to get input 	
+	addiu $v0,$0,4	
+	syscall        
+	j main	
 end:	
 	
 	la $t0, answer 			# load address of answer to store a2 in 
