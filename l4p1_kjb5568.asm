@@ -4,13 +4,14 @@ StackTop:    .word 0:99
 StackBot: 
 var0:	     .word 0
 var1:	     .word 4
-operator:    .word 
-answer:      .word 
+operator:    .word 0
+answer:      .word 0
 
 strPrompt:   .asciiz "please enter 1st number: " 
 strPrompt2:  .asciiz "please enter 2nd number: "
 opSel:       .asciiz "Select Operator: " 
 disPrompt:    .asciiz "Result: " 
+remainder:    .asciiz "Remainder: " 
 badInput:    .asciiz "Input invalid " 
 
 .text
@@ -105,6 +106,7 @@ DisplayNumb:
 	addi $a0, $0, 0xA 		#ascii code for LF
 	addi $v0, $0, 0xB		 #syscall 11 prints the lower 8 bits of $a0 as an ascii character.
 	syscall
+
 	
 	j main
 	
@@ -154,6 +156,7 @@ done:
 	add $a2, $s3, 0		#store the result of muliplication in $a2 to be passed out of function
 	j end				# jump to display to output result 
 	
+	
 DivNumb:
 
 	add $v0, $0,$0	#initially goes 0 times
@@ -178,6 +181,20 @@ chko:	sltu $t0, $a0,$a1	#set $t0 if $a0 < $a1
 	
 	add $a2, $v0, 0		#store result in $a2
 	add $a3, $a0,0		#stores remainder in $a3
+	
+	
+	la $a0, remainder
+	addiu $v0,$0,4		        # display prompt to user 
+	syscall	
+	
+	addi $a0,$a3,0
+	addi $v0, $0,1
+	syscall 
+	
+	addi $a0, $0, 0xA 		#ascii code for LF
+	addi $v0, $0, 0xB		 #syscall 11 prints the lower 8 bits of $a0 as an ascii character.
+	syscall
+	
 	
 	j end				# jump to display to output result 
 	 	
