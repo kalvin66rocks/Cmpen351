@@ -11,6 +11,7 @@ strPrompt:   .asciiz "please enter 1st number: "
 strPrompt2:  .asciiz "please enter 2nd number: "
 opSel:       .asciiz "Select Operator: " 
 disPrompt:    .asciiz "Result: " 
+badInput:    .asciiz "Input invalid " 
 
 .text
 
