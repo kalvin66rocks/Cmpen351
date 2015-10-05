@@ -6,12 +6,13 @@ var0:	     .word 0
 var1:	     .word 4
 operator:    .word 0
 answer:      .word 0
+remainder:   .word 0
 
 strPrompt:   .asciiz "please enter 1st number: " 
 strPrompt2:  .asciiz "please enter 2nd number: "
 opSel:       .asciiz "Select Operator: " 
 disPrompt:    .asciiz "Result: " 
-remainder:    .asciiz "Remainder: " 
+remainderprompt:    .asciiz "Remainder: " 
 badInput:    .asciiz "Input invalid " 
 
 .text
@@ -36,7 +37,9 @@ main:
 	
 	# put var0 and var1 in $a0 and $a1 respectivly 
 	la $t1, var0
-	la $t2, var1 
+	la $t2, var1
+	la $a2, answer
+	la $a3, remainder 
 	lw $a0,0($t1)
 	lw $a1,0($t2)
 	
@@ -54,10 +57,6 @@ bad:
 	syscall        
 	j main	
 end:	
-	
-	la $t0, answer 			# load address of answer to store a2 in 
-	sw $a2, 0($t0)			# store a2 in answer
-	
 	la $a0, disPrompt		# put display prompt in a0 to pass to displayNumb
 	la $t0, answer 			# put answer in a1
 	lw $a1,0($t0)			# put value of t0 into al to send to display 
@@ -111,83 +110,82 @@ DisplayNumb:
 	j main
 	
 AddNumb:
+	#taking in $a1 and $a2, adds the two numbers together then stores the answer into $a2 which is the address in memory which is then passed out
 	
-	add $a2, $a0,$a1 		# add two arguments return result in a2
+	add $t0, $a0,$a1 		# add two arguments return result in a2
+	sw  $t0, 0($a2)
 	j end				# jump to display to output result 
 
 SubNumb: 
+	#taking in $a1 and $a2, subtracts the two numbers then stores the answer into $a2 which is the address in memory which is then passed out
 	
-	sub $a2, $a0,$a1			# subtract two arguments return result in a2
+	sub $t0, $a0,$a1			# subtract two arguments return result in a2
+	sw  $t0, 0($a2)
 	j end				# jump to display to output result 
 	
 MultNumb:
+	#taking in $a1 and $a2, multiplies the two numbers together then stores the answer into $a2 which is the address in memory which is then passed out
 	
-	# put multipler code here 
+	addu $t3, $0, $0	#set 0 in $s3
+	addu $t4,$0, $0		#set 0 in $s4
 	
-	addu $s3, $0, $0	#set 0 in $s3
-	addu $s4,$0, $0		#set 0 in $s4
-	
-	add $s1, $a1, 0		#moves what is in $a1 to $s1
-	add $s0,$a0, 0		#moves what is in $a0 to $s0
-	beq $s1,$0, done
-	beq $s0,$0, done
-	move $s2,$0
+	add $t1, $a1, 0		#moves what is in $a1 to $s1
+	add $t0,$a0, 0		#moves what is in $a0 to $s0
+	beq $t1,$0, done
+	beq $t0,$0, done
+	move $t2,$0
 	
 loop:
-	andi $t0,$s0,1
-	beq $t0,$0, next   #skips if 0
-	addu $s3,$s3,$s1   #product += first number
-	sltu $t0,$s3,$s1   #catch carryout, either a 0 or 1
-	addu $s4,$s4,$t0   #product += carry
-	addu $s4,$s4,$s2   #product += second number
-	
+	andi $t7,$t0,1	   #and $t0 with 1 to figure out of to multiply or shift
+	beq $t7,$0, next   #skips if 0
+	addu $t3,$t3,$t1   #product += first number
+	sltu $t7,$t3,$t1   #catch carryout, either a 0 or 1
+	addu $t4,$t4,$t7   #product += carry
+	addu $t4,$t4,$t2   #product += second number
 next:
 	#shift numbers left
-	srl $t0,$s1,31
-	sll $s1,$s1,1
-	sll $s2,$s2,1
-	addu $s2,$s2,$t0
+	srl $t7,$t1,31
+	sll $t1,$t1,1
+	sll $t2,$t2,1
+	addu $t2,$t2,$t7
 	
-	srl $s0,$s0,1	#shift multiplier right
-	bne $s0,$0,loop  #go back into our loop
-	
+	srl $t0,$t0,1	#shift multiplier right
+	bne $t0,$0,loop  #go back into our loop
 done: 
-	
-	add $a2, $s3, 0		#store the result of muliplication in $a2 to be passed out of function
+	#answer is in $t3
+	sw  $t3, 0($a2)
 	j end				# jump to display to output result 
 	
 	
 DivNumb:
+	#taking in $a1 and $a2, divides the two numbers then stores the answer into $a2 and the remainder in $a3 which is the address in memory which is then passed out
 
-	add $v0, $0,$0	#initially goes 0 times
+	add $t7, $0,$0	#initially goes 0 times
 	add $t1,$a1,$0
 	j chko
-	
 oloop: 
 	add $t1, $a1,$0 #divisor multiple starts at 1
 	add $t2,$0,1	#initialize temp quotient to 1
 	j noqmul
-	
 inloop:	sll $t2, $t2, 1	#multiply temp quotient by 2
 noqmul:	sll $t1, $t1, 1	#multiply divisor by 2
 	sltu $t0, $a0, $t1	#if remaining dividend is less than div multiple
 	beq $t0, $zero, inloop	#fall through to add temp quotient
 	
-	addu $v0,$v0,$t2	#add temp quotient to running
+	addu $t7,$t7,$t2	#add temp quotient to running
 	srl $t1,$t1,1		#undo last divisor multiply
 	sub $a0,$a0,$t1		#subtract biggest multiple from dividend
 chko:	sltu $t0, $a0,$a1	#set $t0 if $a0 < $a1
 	beq $t0,$0,oloop	#repeat until div is calculated
 	
-	add $a2, $v0, 0		#store result in $a2
-	add $a3, $a0,0		#stores remainder in $a3
+	sw  $t7, 0($a2)
+	sw  $a0, 0($a3)
 	
-	
-	la $a0, remainder
+	la $a0, remainderprompt
 	addiu $v0,$0,4		        # display prompt to user 
 	syscall	
 	
-	addi $a0,$a3,0
+	lw $a0,0($a3)
 	addi $v0, $0,1
 	syscall 
 	
