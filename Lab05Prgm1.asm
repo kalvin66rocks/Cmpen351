@@ -24,17 +24,15 @@ main:
 
 	la $a0,strPrompt	       # send the first propmt to get input 
 	la $a1,var0		       # put first integer in var0	
-	la $a2, badInput	       # when the numbers are bad 
-	la $a3, buffer	               # going to use this buffer to harvest me string
+	la $a2, badInput	       # when the numbers are bad we tell the user with this 
 	jal GetInput		       # call GetInput with a0 and a1 being passed to it 
 
 	la $a0, opSel                  # send the operator prompt to GetOperator
 	jal GetOperator		       # call GetOperator with a0 as argument 
 	
-	addiu $t0,$v1,0		       # return value of GetOperator will go into t0
-	
 	la $a0,strPrompt2	       # send the 2nd propmt to get input 
 	la $a1,var1		       # put 2nd integer in var1
+	la $a2,badInput		       # when the numbers are bad we tell the user with this 
 	jal GetInput		       # call GetInput with a0 and a1 being passed to it 
 	
 	
@@ -47,10 +45,10 @@ main:
 	
 	# compare t0 against all operator ascii values  
 	# call respective procedure passing a0 and a1 to it 
-	beq $t0,43, AddNumb
-	beq $t0,45, SubNumb
-	beq $t0,42, MultNumb
-	beq $t0,47, DivNumb
+	beq $v1,43, AddNumb
+	beq $v1,45, SubNumb
+	beq $v1,42, MultNumb
+	beq $v1,47, DivNumb
 ####################################################################################################
 # jump to here from any input procedures such as getInput of getOperator 
 # a3 
@@ -77,36 +75,50 @@ end:
 # $a3 holds buffer 		
 GetInput:
 
+	# clearing the temp registers that handled the decimal number before I enter will also do it when i levae 
+	addi $t0,$0,0
+	addi $t1,$0,0
+	addi $t2,$0,0
+	addi $t3,$0,0
+	addi $t4,$0,0
+	addi $t5,$0,0
+	addi $t6,$0,0
+	addi $t7,$0,0
+			
 	# display prompt 
 	addiu $v0,$0,4				 # print str prompt
 	syscall		
-		       
+		 
+	la $t7,buffer				 # panda said i could la bffer in getinput so im doing that putting in a0 cause I dont care about previous value      
 	addi $sp, $sp, -4    			 # decrememnt stack pointer by 4
 	sw   $a1, 0($sp)     			 # save a1  to stack to get the address  later 
 	
-	
-	# this might not be correct ask a panda 
 	# get the string from user 	
 	addi $v0,$0,8			# get input stirng with syscall 8
-	addi $a0,$a3,0			# move buffer to $a0
+	addi $a0,$t7,0			# move buffer to $a0
 	addi $a1,$0,80			# put are max length in a1
 	syscall
 	
-	lw $a1,0($sp)			# restore al original address value of var0 or var1
 	
+	lw $a1,0($sp)			# restore al original address value of var0 or var1
+	addi $sp, $sp, +4    		# add stack pointer by 4
 	addi $t4,$t4,10			# need this ten to move over a decimal spot and i never wana change it so its stying above the loops
 	
-	# subroutens !!!!!!!	
+	# subroutines !!!!!!!	
+	##########################################################################
+	# subroutine 1
+	# registers 
+	# input is $a0 
 	charToNum:
 	
-		lb  $t1,0($a3)			# syscall put the string in 
-		add $a3,$a3,1			# advancce the pointer 
+		lb  $t1,0($t7)			# syscall put the string in temp reg 
+		add $t7,$t7,1			# advancce the pointer 
 		
 		addi $t2,$0,0xA
-		beq $t1,$t2,break1 		# if t3 is <cr> get out
-		beq $t1,$0, break1		# if t3 is null get out 
+		beq  $t1,$t2,break1 		# if t3 is <cr> get out
+		beq  $t1,$0, break1		# if t3 is null get out 
 		addi $t2,$0,0x2E		
-		beq $t1,$t2,break2		# if theres a period get out 
+		beq  $t1,$t2,postPeriod		# if theres a period get out 
 	
 		# see if $t1 is any value 0-9
 		# look to see if t1 holds a valid ascii
@@ -123,31 +135,71 @@ GetInput:
 		
 		
 		j badIn 				# if none of the above cases are true we cant havve a valid input so tell the user
-		
-	valid:
 	
+	############################################################################################################
+	# subroutine 2 	
+	# come to valid when inputs is digits if I hit the period im not coming back here 	
+	# inputs $t3,t6,t0
+	valid:
+		
+		
 		sub  $t3,$t1,0x30		# convert ascii to num with 0x30
-		mult $t3,$t4		        # we multiply to move to tens digit
-		mflo $t3			# get the product out of lo 
-		beq  $t0,0, dontMult10		# if t0 =0 we dont want to multiply it by 10 becuase its the first run
-		mult $t0, $t4			# if its greater than we have to multiply by ten to keep the implied decimal in order
-		mflo $t0			# this is self explanitory 
+		beq  $t6,1,MultT31		# multiply t3 by ten and add it to t0
+		beq  $t6,2,MultT32		# add t3 to t0 
+		bne  $t0,0, t0Mult10 		# if t0 =0 we dont want to multiply it by 10 becuase its the first run			
 		add $t0,$t0,$t3			# add the t3 to our running total 
 		j charToNum
 		
-		dontMult10:	
-			add $t0,$t0,$t3		# now that tens digit is in t3 keep a total by adding to $t0
+		t0Mult10:
+			
+			mult $t0, $t4		# if its greater than we have to multiply by ten to keep the implied decimal in order
+			mflo $t0		# this is self explanitory get the product out of lo 
+			add $t0,$t0,$t3		# add the multiplied t0 with t3
 			j charToNum
-		
-		
 			
+		MultT31:
 			
-		j charToNum			# loop untill we get to one of the break labels
+			mult $t3,$t4
+			mflo $t3
+			add $t0,$t0,$t3
+			add $t6,$t6,1
+			j charToNum
+			
+		MultT32:
+
+			add $t0,$t0,$t3
+			add $t6,$t6,1
+			j charToNum
+			
+	# jump here to handle all my decimal calculation 
+	postPeriod:	
 		
-	break2:	
-	
+		# first we need to multiply $t0 with 100 because we need room for two decimal places 
+		# so mult by 10 twice 
+		mult $t0,$t4
+		mflo $t0
+		mult $t0,$t4
+		mflo $t0	   		
+		
+		# set this to one to tell charToNum to multiply t3 by 10 ... one time and only one time 
+		addi $t6,$0,1
+		# thats all we needed to do here now we can do are stuff as usual 
+		
 		j charToNum
 	break1:
+		
+		sw $t0,0($a1)			# store the value in var0 or var1
+		
+		# clearing the temp registers that handled the decimal number before I leave 
+		addi $t0,$0,0
+		addi $t1,$0,0
+		addi $t2,$0,0
+		addi $t3,$0,0
+		addi $t4,$0,0
+		addi $t5,$0,0
+		addi $t6,$0,0
+		addi $t7,$0,0
+		
 		jr $ra				# return back to main with input in var0 or var1 depending on which time this was called
 
 ###########################################################################################################################################################
