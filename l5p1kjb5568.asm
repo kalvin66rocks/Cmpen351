@@ -15,7 +15,9 @@ remainderprompt: .asciiz " Remainder: "
 badInput:    	 .asciiz "Input invalid " 
 
 .text
-	la $sp,StackBot 	       # set the pointer of the stack 
+	la $sp,StackBot 	       # set the pointer of the stack since we are defining our own stack, as it is proper procedure
+##########################################################################################################
+#this is the main function that branches out to each other subroutine/label
 main: 
 
 	la $a0,strPrompt	       # send the first propmt to get input 
@@ -155,9 +157,9 @@ GetInput:
 	valid:
 		#subroutine that handles valid characters that are numbers
 		sub $t3, $t1, 0x30 		#convert the ascii value to an integer value
-		beq  $t6,1,MultT31		# multiply t3 by ten and add it to t0
-		beq  $t6,2,Addt0t3
-		bne  $t0,0, nomult 		# if t0 =0 we dont want to multiply it by 10 becuase its our first run			
+		beq  $t6,1,MultT31		# multiply t3 by ten and add it to t0 if our counter is equal to 1
+		beq  $t6,2,Addt0t3		# add $t0 to $t3 if our counter is equal to 2
+		bne  $t0,0, nomult 		# if t0 is equal to 0 we dont want to multiply it by 10 becuase its our first run			
 		add $t0,$t0,$t3			# add the t3 to our running total 
 		j Character2Number
 		
@@ -168,16 +170,17 @@ GetInput:
 			j Character2Number
 			
 		MultT31:
-			mult $t3,$t4
-			mflo $t3
-			add $t0,$t0,$t3
-			add $t6,$t6,1
+			mult $t3,$t4	#multiply t3, by t4
+			mflo $t3	#product goes into $t3
+			add $t0,$t0,$t3	#add $t3 and $t0 which is our running total
+			add $t6,$t6,1	#increment the counter
 			j Character2Number
 			
 		Addt0t3:
-			add $t0,$t0,$t3
-			add $t6,$t6,1
+			add $t0,$t0,$t3		#adds $t0 and $t3 since we do not want to multiply in this case, which is our running total
+			add $t6,$t6,1	#increment the counter
 			j Character2Number
+	#subroutine to handle the two spots that we hit after we hit the period
 	period:
 		#need to handle room to put in the cents
 		mult $t0,$t4
@@ -187,7 +190,8 @@ GetInput:
 		
 		#need a counter to only do multiplication once
 		addi $t6,$0,1
-		j Character2Number	
+		j Character2Number
+	#escape function from reading in data from whenever we hit a null character or a <cr>	
 	escape:	
 		#store the input before we return to main as all of the characters have been read in
 		sw $t0,0($a1)
@@ -207,15 +211,16 @@ GetInput:
 #############################################################################################################################################################	
 #Registers
 #inputs					Outputs
-#  $a1(answer)				none
+#  $a1(answer)				display
 #  $a2(remainder[only for divide])
+#  $v1(operator) --this might not be the best way to pass this
 #takes in the answer and is able to output it as a number in implied decimal point
 DisplayNumb:
 	
 	addiu $v0,$0,4 		        # print string prompt 
 	syscall 
 	
-	addi $t6,$t6,100	#stores 100 in $t1 for dividng by for proper printout
+	addi $t6,$t6,100	#stores 100 in $t1 for dividng by for proper printout since it used throughout the entire subroutine
 	#use the operator to determine how to handle the answer
 	beq $v1,43, PrintAddSub
 	beq $v1,45, PrintAddSub
@@ -227,7 +232,7 @@ DisplayNumb:
 	div $a1,$t6 #PrintAddSub
 	mflo $t2    #quotient, dollars
 	mfhi $t3    #remainder, cents
-	beq $t2,0,nomultadd
+	beq $t2,0,nomultadd	#checks to see if our quotient would be 0, if so we branch
 	addi $v0,$0,1
 	addi $a0,$t2,0
 	syscall
@@ -238,7 +243,7 @@ DisplayNumb:
 	addi $v0,$0,1
 	addi $a0,$t3,0
 	syscall
-	beq $t3,0,extrazero
+	beq $t3,0,extrazero	#branches to print out an extra 0 if we would only have one decimal place
 	j endofprint
 	
 	#subroutine for correctly printing small added numbers
@@ -262,7 +267,7 @@ DisplayNumb:
 	div $a1,$t6 #PrintMult
 	mflo $t2    #quotient, dollars
 	mfhi $t3    #remainder, cents
-	beq $t2,0, nmultdisp
+	beq $t2,0, nmultdisp  #checks to see if our quotient would be 0, if so we branch
 	div $a1,$a1,100
 	div $a1,$t6
 	mflo $t4    #quotient, dollars
@@ -276,9 +281,10 @@ DisplayNumb:
 	addi $v0,$0,1
 	addi $a0,$t5,0
 	syscall
-	beq $t5,0,extrazero
+	beq $t5,0,extrazero #branches to print out an extra 0 if we would only have one decimal place
 	j endofprint
 	
+	#subroutine to print out an extra 0 then jump to the end of print subroutine
 	extrazero:
 	addi $v0,$0,1
 	addi $a0,$0,0
@@ -301,6 +307,7 @@ DisplayNumb:
 	syscall
 	j endofprint
 	
+	#subroutine for correctly printing divided numbers, both the quotient and remainder are printed
 	PrintDiv:
 	addi $v0,$0,1 #PrintDiv
 	addi $a0,$a1,0
@@ -315,8 +322,7 @@ DisplayNumb:
 	addi $v0,$0,1
 	addi $a0,$0,0
 	syscall
-	
-	la $a0,remainderprompt
+	la $a0,remainderprompt		#prints the prompt for the remainder since it is only used once
 	addiu $v0,$0,4 		        # print remainder text 
 	syscall 
 	div $t5,$a2,100
@@ -335,31 +341,43 @@ DisplayNumb:
 	
 	
 	
-	
-endofprint:	
+	#label for everything to jump to so that we can print a hard return everytime we print an answer
+	endofprint:	
 	# hard return
 	addi $a0, $0, 0xA 		#ascii code for LF
 	addi $v0, $0, 0xB		 #syscall 11 prints the lower 8 bits of $a0 as an ascii character.
 	syscall
 	
 	j main
-#############################################################################################################################################################		
+#############################################################################################################################################################
+#Registers
+#inputs					Outputs
+# $a1 					$a2 (sum)
+# $a0 	
+#taking in $a1 and $a2, adds the two numbers together then stores the answer into $a2 which is the address in memory which is then passed out	
 AddNumb:
-	#taking in $a1 and $a2, adds the two numbers together then stores the answer into $a2 which is the address in memory which is then passed out
 	
 	add $t0, $a0,$a1 		# add two arguments return result in a2
 	sw  $t0, 0($a2)
 	j end				# jump to display to output result 
-#############################################################################################################################################################	
+#############################################################################################################################################################
+#Registers
+#inputs					Outputs
+# $a1 					$a2 (difference)
+# $a0 
+#taking in $a1 and $a2, subtracts the two numbers then stores the answer into $a2 which is the address in memory which is then passed out	
 SubNumb: 
-	#taking in $a1 and $a2, subtracts the two numbers then stores the answer into $a2 which is the address in memory which is then passed out
 	
 	sub $t0, $a0,$a1			# subtract two arguments return result in a2
 	sw  $t0, 0($a2)
 	j end				# jump to display to output result 
-#############################################################################################################################################################		
+#############################################################################################################################################################
+#Registers
+#inputs					Outputs
+# $a1 					$a2 (product)
+# $a0
+#taking in $a1 and $a2, multiplies the two numbers together then stores the answer into $a2 which is the address in memory which is then passed out 	
 MultNumb:
-	#taking in $a1 and $a2, multiplies the two numbers together then stores the answer into $a2 which is the address in memory which is then passed out
 	
 	addu $t3, $0, $0	#set 0 in $s3
 	addu $t4,$0, $0		#set 0 in $s4
@@ -394,10 +412,10 @@ done:
 #############################################################################################################################################################
 #Registers
 #inputs					Outputs
-# $a1
-#
+# $a1 (divisor)				$a2 (quotient)
+# $a0 (dividend)			$a3 (remainder)
 #taking in $a1 and $a2, divides the two numbers then stores the answer into $a2 and the remainder in $a3 which is the address in memory which is then passed out
-	#registers: in $a0,$a1, output registers $a2 (quotient), $a3 (remainder)		
+#derived in class and adapted to work in this program as our own divide		
 DivNumb:
 	beq $a1,0,bad  #handles division by 0, which takes back into input first number
 	add $t7, $0,$0	#initially goes 0 times
