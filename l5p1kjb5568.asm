@@ -22,16 +22,17 @@ main:
 	la $a0,strPrompt	       # send the first propmt to get input 
 	la $a1,var0		       # put first integer in var0
 	la $a2,badInput		       # when non nalid input is detected
-	la $a3, buffer		       #loads the buffer that will be used to load in the string of input
+	#la $a3, buffer		       #loads the buffer that will be used to load in the string of input
 	jal GetInput		       # call GetInput with a0 and a1 being passed to it 
 
 	la $a0, opSel                  # send the operator prompt to GetOperator
 	jal GetOperator		       # call GetOperator with a0 as arguments 
 	
-	addiu $t0,$v1,0		       # return value of GetOperator will go into t0
+	#addiu $t0,$v1,0		       # return value of GetOperator will go into t0
 	
 	la $a0,strPrompt2	       # send the 2nd propmt to get input 
 	la $a1,var1		       # put 2nd integer in var1
+	la $a2,badInput
 	jal GetInput		       # call GetInput with a0 and a1 being passed to it 
 	
 	
@@ -45,14 +46,14 @@ main:
 	
 	# compare t0 against all operator ascii values  
 	# call respective procedure passing a0 and a1 to it 
-	beq $t0,43, AddNumb
-	beq $t0,45, SubNumb
-	beq $t0,42, MultNumb
-	beq $t0,47, DivNumb
+	beq $v1,43, AddNumb
+	beq $v1,45, SubNumb
+	beq $v1,42, MultNumb
+	beq $v1,47, DivNumb
 #############################################################################################################################################################	
 bad:
 	#handling for bad input, can jump here from multiple labels, prompts the user of bad input then sends it back to main
-	la $a0,badInput	                # send the first propmt to get input 	
+	addi $a0,$a2,0 	                # send the first propmt to get input 	
 	addiu $v0,$0,4	
 	syscall        
 	j main	
@@ -84,24 +85,39 @@ GetOperator:
 	 
 #############################################################################################################################################################	
 GetInput:
+	#gets the numeric input the user entered and stores it into memory
+	#clear registers to be used within function, was causing errors before
+	addi $t0,$0,0
+	addi $t1,$0,0
+	addi $t2,$0,0
+	addi $t3,$0,0
+	addi $t4,$0,0
+	addi $t5,$0,0
+	addi $t6,$0,0
+	addi $t7,$0,0
+	
 	
 	addiu $v0,$0,4		        # display prompt to user 
 	syscall
+	
+	la $t7,buffer			#load buffer into $t7
 	addi $sp,$sp,-4			#decrements the stack pointer 4 so that we can store a word into it
 	sw $a1, 0($sp)			#save $a1 to the stack for later use
-	addi $v0, 8			#syscall for user to input a string
-	addi $a0, $a3,0			#load the buffer into $a0
+	
+	addi $v0,$0, 8			#syscall for user to input a string
+	addi $a0, $t7,0			#load the buffer into $a0
 	addi $a1,$0,80			#maximum length of the string goes into $a1 which is the size of the buffer
 	syscall
 	
 	lw $a1,0($sp)			#restore what was originally in $a1 from the stack
 	addi $sp,$sp,4			#increment the stack pointer so that is back in its original position
 	addi $t4,$t4,10			#set the decimal place so that there is a tens digit
-##########################################################################################	
-Character2Number:
+	##########################################	
+	Character2Number:
 	#subroutine that converts the characters to numbers and handles the decimal point
-	lb $t1, 0($a3)			#the string will be loaded into here
-	add $a3,$a3, 1			#increment the pointer to the buffer by 1
+	lb $t1, 0($t7)			#the string will be loaded into here
+	add $t7,$t7, 1			#increment the pointer to the buffer by 1
+	
 	addi $t2, $0,0xA		#puts the <cr> value int $t2
 	beq $t1, $t2,escape		#if the byte in $t3 is a carriage return (enter key) escape
 	beq $t1, $0, escape		#if the byte in $t3 is a null character
@@ -123,27 +139,56 @@ Character2Number:
 	#else we will know that what is entered is bad input
 	j bad
 	##########################################################################################
-	Valid:
+	valid:
 	#subroutine that handles valid characters that are numbers
 		sub $t3, $t1, 0x30 		#convert the ascii value to an integer value
-		mult $t3,$t4			#move tens digit by multiplying 10
-		mflo $t3
-		beq $t0,0,nomult
-		mult $t0, $t4
-		mflo $t0
-		add $t0,$t0,$t3
-	
+		beq  $t6,1,MultT31		# multiply t3 by ten and add it to t0
+		beq  $t6,2,Addt0t3
+		bne  $t0,0, nomult 		# if t0 =0 we dont want to multiply it by 10 becuase its our first run			
+		add $t0,$t0,$t3			# add the t3 to our running total 
 		j Character2Number
-		##########################################################################################
+		
 		nomult:
-		#subroutine for handling the first run through so that we do not multiply by 10
-		add $t0,$t0,$t3		#put tens digit into $t3 and loop
-		j CHaracter2Number
+			mult $t0, $t4		# if its greater than we have to multiply by ten to keep the implied decimal in order
+			mflo $t0		
+			add $t0,$t0,$t3			# add the multiplied t0 with t3
+			j Character2Number
+			
+		MultT31:
+			mult $t3,$t4
+			mflo $t3
+			add $t0,$t0,$t3
+			add $t6,$t6,1
+			j Character2Number
+			
+		Addt0t3:
+			add $t0,$t0,$t3
+			add $t6,$t6,1
+			j Character2Number
 	period:
-	#keep looping, this just means we have hit the period
+	#need to handle room to put in the cents
+		mult $t0,$t4
+		mflo $t0
+		mult $t0,$t4
+		mflo $t0
+		
+		#need a counter to only do multiplication once
+		addi $t6,$0,1
 		j Character2Number	
 	escape:	
 		#have us return to main as all of the characters have been read in
+		sw $t0,0($a1)
+		
+		#clear registers that I used used within function, was causing errors before
+		addi $t0,$0,0
+		addi $t1,$0,0
+		addi $t2,$0,0
+		addi $t3,$0,0
+		addi $t4,$0,0
+		addi $t5,$0,0
+		addi $t6,$0,0
+		addi $t7,$0,0
+		
 		jr $ra 				# return back to main 
 
 #############################################################################################################################################################	
@@ -152,16 +197,40 @@ DisplayNumb:
 	addiu $v0,$0,4 		        # print string prompt 
 	syscall 
 	
-	addi $a0,$a1,0			# put $a1 in $a0 
-	addiu $v0,$0,1			# print $a0
-	syscall 
+	addi $t6,$t6,100	#stores 100 in $t1 for dividng by for proper printout
+	#will have to account for different operators having different corection requirements
+	beq $v1,43, PrintAddSub
+	beq $v1,45, PrintAddSub
+	#beq $v1,42, PrintMult
+	#beq $v1,47, PrintDiv
+	
+	PrintAddSub:
+	div $a1,$t6
+	mflo $t2    #quotient, dollars
+	mfhi $t3    #remainder, cents
+	addi $v0,$0,1
+	addi $a0,$t2,0
+	syscall
+	#using print character, print the period
+	addi $v0,$0,11
+	addi $a0,$0,0x2E	#loads a period into $a0
+	syscall
+	addi $v0,$0,1
+	addi $a0,$t3,0
+	syscall
+	
+	
+	
+	#addi $a0,$a1,0			# put $a1 in $a0 
+	#addiu $v0,$0,1			# print $a0
+	#syscall 
 	
 	# hard return
 	addi $a0, $0, 0xA 		#ascii code for LF
 	addi $v0, $0, 0xB		 #syscall 11 prints the lower 8 bits of $a0 as an ascii character.
 	syscall
 
-	
+endofprint:	
 	j main
 #############################################################################################################################################################		
 AddNumb:
