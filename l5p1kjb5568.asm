@@ -1,4 +1,3 @@
-# line break I got from stack overflow the rest is my code 
 .data
 StackTop:    	 .word 0:99
 StackBot: 
@@ -12,7 +11,7 @@ strPrompt:  	 .asciiz "please enter 1st number: "
 strPrompt2: 	 .asciiz "please enter 2nd number: "
 opSel:      	 .asciiz "Select Operator: " 
 disPrompt:    	 .asciiz "Result: " 
-remainderprompt: .asciiz "Remainder: " 
+remainderprompt: .asciiz " Remainder: " 
 badInput:    	 .asciiz "Input invalid " 
 
 .text
@@ -62,7 +61,9 @@ end:
 	#handles the displaying of an answer to the user then loops the program so that more calculations may be entered
 	la $a0, disPrompt		# put display prompt in a0 to pass to displayNumb
 	la $t0, answer 			# put answer in a1
+	la $t1, remainder
 	lw $a1,0($t0)			# put value of t0 into al to send to display 
+	lw $a2,0($t1)
 	jal DisplayNumb			# jump to displaynum with a0 and a1 arguments loaded 
 	
 	j main			        # keep looping 
@@ -198,11 +199,12 @@ DisplayNumb:
 	syscall 
 	
 	addi $t6,$t6,100	#stores 100 in $t1 for dividng by for proper printout
+	addi $t7,$t7,00		#stores 00 incase of having whole numbers
 	#will have to account for different operators having different corection requirements
 	beq $v1,43, PrintAddSub
 	beq $v1,45, PrintAddSub
-	#beq $v1,42, PrintMult
-	#beq $v1,47, PrintDiv
+	beq $v1,42, PrintMult
+	beq $v1,47, PrintDiv
 	
 	PrintAddSub:
 	div $a1,$t6
@@ -218,19 +220,88 @@ DisplayNumb:
 	addi $v0,$0,1
 	addi $a0,$t3,0
 	syscall
+	beq $t3,0,extrazero
+	j endofprint
+	
+	PrintMult:
+	div $a1,$t6
+	mflo $t2    #quotient, dollars
+	mfhi $t3    #remainder, cents
+	beq $t2,0, nmultdisp
+	div $a1,$a1,100
+	div $a1,$t6
+	mflo $t4    #quotient, dollars
+	mfhi $t5    #remainder, cents
+	addi $v0,$0,1
+	addi $a0,$t4,0
+	syscall
+	addi $v0,$0,11
+	addi $a0,$0,0x2E	#loads a period into $a0
+	syscall
+	addi $v0,$0,1
+	addi $a0,$t5,0
+	syscall
+	beq $t3,0,extrazero
+	j endofprint
+	
+	extrazero:
+	addi $v0,$0,1
+	addi $a0,$0,0
+	syscall
+	j endofprint
+	
+	nmultdisp:
+	addi $v0,$0,1
+	addi $a0,$a1,0
+	syscall
+	addi $v0,$0,11
+	addi $a0,$0,0x2E	#loads a period into $a0
+	syscall
+	addi $v0,$0,1
+	addi $a0,$t7,0
+	syscall
+	
+	PrintDiv:
+	addi $v0,$0,1
+	addi $a0,$2,0
+	syscall
+	addi $v0,$0,11
+	addi $a0,$0,0x2E	#loads a period into $a0
+	#next two systems calls each print a 0 since we need the answer to be in implied decimal and we know that the answer will be whole
+	syscall
+	addi $v0,$0,1
+	addi $a0,$0,0
+	syscall
+	addi $v0,$0,1
+	addi $a0,$0,0
+	syscall
+	
+	la $a0,remainderprompt
+	addiu $v0,$0,4 		        # print remainder text 
+	syscall 
+	div $t5,$a2,100
+	addi $v0,$0,1
+	addi $a0,$t5,0
+	syscall
+	addi $v0,$0,11
+	addi $a0,$0,0x2E	#loads a period into $a0
+	syscall
+	addi $v0,$0,1
+	addi $a0,$0,0
+	syscall
+	addi $v0,$0,1
+	addi $a0,$0,0
+	syscall
 	
 	
 	
-	#addi $a0,$a1,0			# put $a1 in $a0 
-	#addiu $v0,$0,1			# print $a0
-	#syscall 
 	
+endofprint:	
 	# hard return
 	addi $a0, $0, 0xA 		#ascii code for LF
 	addi $v0, $0, 0xB		 #syscall 11 prints the lower 8 bits of $a0 as an ascii character.
 	syscall
-
-endofprint:	
+	
 	j main
 #############################################################################################################################################################		
 AddNumb:
@@ -305,17 +376,15 @@ chko:	sltu $t0, $a0,$a1	#set $t0 if $a0 < $a1
 	sw  $t7, 0($a2)
 	sw  $a0, 0($a3)
 	
-	la $a0, remainderprompt
-	addiu $v0,$0,4		        # display prompt to user 
-	syscall	
-	
-	lw $a0,0($a3)
-	addi $v0, $0,1
-	syscall 
-	
-	addi $a0, $0, 0xA 		#ascii code for LF
-	addi $v0, $0, 0xB		 #syscall 11 prints the lower 8 bits of $a0 as an ascii character.
-	syscall
+	#la $a0, remainderprompt
+	#addiu $v0,$0,4		        # display prompt to user 
+	#syscall	
+	#lw $a0,0($a3)
+	#addi $v0, $0,1
+	#syscall 
+	#addi $a0, $0, 0xA 		#ascii code for LF
+	#addi $v0, $0, 0xB		 #syscall 11 prints the lower 8 bits of $a0 as an ascii character.
+	#syscall
 	
 	
 	j end				# jump to display to output result 
