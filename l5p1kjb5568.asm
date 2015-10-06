@@ -21,13 +21,10 @@ main:
 	la $a0,strPrompt	       # send the first propmt to get input 
 	la $a1,var0		       # put first integer in var0
 	la $a2,badInput		       # when non nalid input is detected
-	#la $a3, buffer		       #loads the buffer that will be used to load in the string of input
 	jal GetInput		       # call GetInput with a0 and a1 being passed to it 
 
 	la $a0, opSel                  # send the operator prompt to GetOperator
 	jal GetOperator		       # call GetOperator with a0 as arguments 
-	
-	#addiu $t0,$v1,0		       # return value of GetOperator will go into t0
 	
 	la $a0,strPrompt2	       # send the 2nd propmt to get input 
 	la $a1,var1		       # put 2nd integer in var1
@@ -50,6 +47,8 @@ main:
 	beq $v1,42, MultNumb
 	beq $v1,47, DivNumb
 #############################################################################################################################################################	
+#handling for bad input, can jump here from multiple labels, prompts the user of bad input then sends it back to main
+#enables us to continue even in the case of invalid input
 bad:
 	#handling for bad input, can jump here from multiple labels, prompts the user of bad input then sends it back to main
 	addi $a0,$a2,0 	                # send the first propmt to get input 	
@@ -57,6 +56,8 @@ bad:
 	syscall        
 	j main	
 #############################################################################################################################################################	
+#handles the displaying of an answer to the user then loops the program so that more calculations may be entered
+#also enables us to loop back through to main
 end:	
 	#handles the displaying of an answer to the user then loops the program so that more calculations may be entered
 	la $a0, disPrompt		# put display prompt in a0 to pass to displayNumb
@@ -68,10 +69,15 @@ end:
 	
 	j main			        # keep looping 
 	
-#############################################################################################################################################################	
+#############################################################################################################################################################
+#Registers
+#inputs					Outputs	
+#   $a0(operation prompt)		$v1(operator)
+#
+#gets the operator, division, multiplication, or divison, or invalid character that will be determined later
 GetOperator:
 	#gets the operator, division, multiplication, or divison, or invalid character that will be determined later
-	addiu $v0,$0,4		        # display opsel prompt to user 
+	addiu $v0,$0,4		        # display operation select prompt to user 
 	syscall				
 	addiu $v0,$0,12			# store char input 
 	syscall
@@ -84,9 +90,15 @@ GetOperator:
 	
 	jr $ra 	
 	 
-#############################################################################################################################################################	
+#############################################################################################################################################################
+#Registers
+#inputs					Outputs	
+#   $a0(strprompt)			$a1(var0)
+#   $a1(var0)
+#   $a2(badinput)
+#   
+#gets the numeric input the user entered and stores it into memory
 GetInput:
-	#gets the numeric input the user entered and stores it into memory
 	#clear registers to be used within function, was causing errors before
 	addi $t0,$0,0
 	addi $t1,$0,0
@@ -113,7 +125,7 @@ GetInput:
 	lw $a1,0($sp)			#restore what was originally in $a1 from the stack
 	addi $sp,$sp,4			#increment the stack pointer so that is back in its original position
 	addi $t4,$t4,10			#set the decimal place so that there is a tens digit
-	##########################################	
+		
 	Character2Number:
 	#subroutine that converts the characters to numbers and handles the decimal point
 	lb $t1, 0($t7)			#the string will be loaded into here
@@ -139,9 +151,9 @@ GetInput:
 	
 	#else we will know that what is entered is bad input
 	j bad
-	##########################################################################################
+	
 	valid:
-	#subroutine that handles valid characters that are numbers
+		#subroutine that handles valid characters that are numbers
 		sub $t3, $t1, 0x30 		#convert the ascii value to an integer value
 		beq  $t6,1,MultT31		# multiply t3 by ten and add it to t0
 		beq  $t6,2,Addt0t3
@@ -167,7 +179,7 @@ GetInput:
 			add $t6,$t6,1
 			j Character2Number
 	period:
-	#need to handle room to put in the cents
+		#need to handle room to put in the cents
 		mult $t0,$t4
 		mflo $t0
 		mult $t0,$t4
@@ -177,7 +189,7 @@ GetInput:
 		addi $t6,$0,1
 		j Character2Number	
 	escape:	
-		#have us return to main as all of the characters have been read in
+		#store the input before we return to main as all of the characters have been read in
 		sw $t0,0($a1)
 		
 		#clear registers that I used used within function, was causing errors before
@@ -193,23 +205,29 @@ GetInput:
 		jr $ra 				# return back to main 
 
 #############################################################################################################################################################	
+#Registers
+#inputs					Outputs
+#  $a1(answer)				none
+#  $a2(remainder[only for divide])
+#takes in the answer and is able to output it as a number in implied decimal point
 DisplayNumb:
 	
 	addiu $v0,$0,4 		        # print string prompt 
 	syscall 
 	
 	addi $t6,$t6,100	#stores 100 in $t1 for dividng by for proper printout
-	addi $t7,$t7,00		#stores 00 incase of having whole numbers
-	#will have to account for different operators having different corection requirements
+	#use the operator to determine how to handle the answer
 	beq $v1,43, PrintAddSub
 	beq $v1,45, PrintAddSub
 	beq $v1,42, PrintMult
 	beq $v1,47, PrintDiv
 	
+	#subroutine for correctly printing added or subtracted numbers
 	PrintAddSub:
-	div $a1,$t6
+	div $a1,$t6 #PrintAddSub
 	mflo $t2    #quotient, dollars
 	mfhi $t3    #remainder, cents
+	beq $t2,0,nomultadd
 	addi $v0,$0,1
 	addi $a0,$t2,0
 	syscall
@@ -223,8 +241,25 @@ DisplayNumb:
 	beq $t3,0,extrazero
 	j endofprint
 	
+	#subroutine for correctly printing small added numbers
+	nomultadd:
+	addi $v0,$0,1 #nomultadd
+	addi $a0,$a1,0
+	syscall
+	addi $v0,$0,11
+	addi $a0,$0,0x2E	#loads a period into $a0
+	syscall
+	addi $v0,$0,1
+	addi $a0,$0,0
+	syscall
+	addi $v0,$0,1
+	addi $a0,$0,0
+	syscall
+	j endofprint
+	
+	#subroutine for correctly printing multiplied numbers
 	PrintMult:
-	div $a1,$t6
+	div $a1,$t6 #PrintMult
 	mflo $t2    #quotient, dollars
 	mfhi $t3    #remainder, cents
 	beq $t2,0, nmultdisp
@@ -241,7 +276,7 @@ DisplayNumb:
 	addi $v0,$0,1
 	addi $a0,$t5,0
 	syscall
-	beq $t3,0,extrazero
+	beq $t5,0,extrazero
 	j endofprint
 	
 	extrazero:
@@ -250,20 +285,25 @@ DisplayNumb:
 	syscall
 	j endofprint
 	
+	#subroutine for correctly printing small multiplied numbers
 	nmultdisp:
-	addi $v0,$0,1
+	addi $v0,$0,1 #nmultdisp
 	addi $a0,$a1,0
 	syscall
 	addi $v0,$0,11
 	addi $a0,$0,0x2E	#loads a period into $a0
 	syscall
 	addi $v0,$0,1
-	addi $a0,$t7,0
+	addi $a0,$0,0
 	syscall
+	addi $v0,$0,1
+	addi $a0,$0,0
+	syscall
+	j endofprint
 	
 	PrintDiv:
-	addi $v0,$0,1
-	addi $a0,$2,0
+	addi $v0,$0,1 #PrintDiv
+	addi $a0,$a1,0
 	syscall
 	addi $v0,$0,11
 	addi $a0,$0,0x2E	#loads a period into $a0
@@ -351,10 +391,15 @@ done:
 	sw  $t3, 0($a2)
 	j end				# jump to display to output result 
 	
-#############################################################################################################################################################		
+#############################################################################################################################################################
+#Registers
+#inputs					Outputs
+# $a1
+#
+#taking in $a1 and $a2, divides the two numbers then stores the answer into $a2 and the remainder in $a3 which is the address in memory which is then passed out
+	#registers: in $a0,$a1, output registers $a2 (quotient), $a3 (remainder)		
 DivNumb:
-	#taking in $a1 and $a2, divides the two numbers then stores the answer into $a2 and the remainder in $a3 which is the address in memory which is then passed out
-
+	beq $a1,0,bad  #handles division by 0, which takes back into input first number
 	add $t7, $0,$0	#initially goes 0 times
 	add $t1,$a1,$0
 	j chko
