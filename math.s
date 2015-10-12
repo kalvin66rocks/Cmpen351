@@ -3,12 +3,13 @@
 stack_beg:
         .word   0 : 40
 stack_end:
-
-var0:	     	 .word 0
-var1:	     	 .word 4
-operator:    	 .word 0
-answer:      	 .word 0
-remainder:   	 .word 0
+		.align  2               # forces the data segment to a word boundary
+var0:	     	 .word 0:4
+var1:	     	 .word 0:4
+operator:    	 .word 0:4
+answer:      	 .word 0:4
+remainder:   	 .word 0:4
+clear:		 .word 0:4
 buffer:    	 .byte 0:80 
 strPrompt:  	 .asciiz "please enter 1st number: " 
 strPrompt2: 	 .asciiz "please enter 2nd number: "
@@ -28,7 +29,7 @@ MainLoop:
 	la $a2,badInput		       # when non nalid input is detected
 	jal GetInput		       # call GetInput with a0 and a1 being passed to it 
 	#need to put conversion here
-	jal DecAscToBin		#string is in $a0, converted to bin and stored in $a1
+	#conversion went insode get input
 
 	la $a0, opSel                  # send the operator prompt to GetOperator
 	jal GetOperator		       # call GetOperator with a0 as arguments 
@@ -40,41 +41,46 @@ MainLoop:
 	la $a2,badInput
 	jal GetInput		       # call GetInput with a0 and a1 being passed to it 
 	#also need conversion here
-	jal DecAscToBin		#string is in $a0, converted to bin and stored in $a1
+	#conversion went insode get input
 
 	# put var0 and var1 in $a0 and $a1 respectivly 
-	la $t1, var0
-	la $t2, var1
+operators:
+	la $a0, var0
+	la $a1, var1
 	la $a2, answer
 	la $a3, remainder 
-	lw $a0,0($t1)
-	lw $a1,0($t2)
-	# compare t0 against all operator ascii values  
-	# call respective procedure passing a0 and a1 to it 
-operators:
+	
 	la $ra, haveanswer	     #sets $ra so that we can return to the proper address after the math functions
-	beq $v1,43, AddNumb
-	beq $v1,45, SubNumb
-	beq $v1,42, MultNumb		
-	beq $v1,47, DivNumb		#answer is in $a2, remainder in $a3, will recitfy to make future calls easier
-	beq $v1,37, DivNumb
-	beq $v1,36, SquareRoot
+	beq $v1,43, AddNumb		#addition
+	beq $v1,45, SubNumb		#subtraction
+	beq $v1,42, MultNumb		#multiplication
+	beq $v1,47, DivNumb		#divison
+	beq $v1,37, DivNumb		#modulo division
+	beq $v1,36, SquareRoot		#square root
 haveanswer:
-	beq $v1,37, justify
-justified:
-	#all answeres are in $a2 now, this will simplify printing and following instructions.
-	#also answers are in decimal, to simplify printing panda has written us some nice conversion functions
+	
+	beq $v1,37, ModSet		#modulo division
+	la $a0, answer
+	la $a1, clear
+	bne $v1,37, ConvertDisplay		#modulo division
+ModSet:
+	la $a0, remainder
+	la $a1, clear
+ConvertDisplay:
+	jal BinToDecAsc			#after this we will be able to print our function with the print str3ing function call
+	
+	la $a0, disPrompt
+	la $a1, answer
+	jal DisplayNumb
+
+	
+	
 	
 	
 ExitPrgm:
         li      $v0, 10
         syscall
 
-justify:
-	la $t0, 0($a2)
-	lw $a3, 0($t0)
-	j justified
-	
 
 
 ########################################
@@ -150,7 +156,7 @@ GetOperator:
 	syscall				
 	addiu $v0,$0,12			# store char input 
 	syscall
-	addi $v1,$v0,0			# send the operator in v1
+	addi $v1,$v0,0			# send the operator in $v1
 
 	# hard return
 	addi $a0, $0, 0xA 		#ascii code for LF
@@ -174,9 +180,84 @@ GetInput:
 	
 	lw $a1,0($sp)			#restore what was originally in $a1 from the stack
 	addi $sp,$sp,4			#increment the stack pointer so that is back in its original position
+	
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	jal DecAscToBin			#string is in $a0, converted to bin and stored in $a
+	lw $ra, 0($sp)
+	addi $s4, $sp, 4
+	
+	
 	jr $ra
 
-
+#Registers
+#inputs					Outputs
+#  $a1(answer)				display
+#  $a2(remainder[only for divide])
+#  $v1(operator) --this might not be the best way to pass this
+#takes in the answer and is able to output it as a number in implied decimal point
+DisplayNumb:
+	
+	addiu $v0,$0,4 		        # print string prompt 
+	syscall 
+	
+	beq $v1,43, PrintAddSub
+	beq $v1,45, PrintAddSub
+	beq $v1,42, PrintMult
+	beq $v1,47, PrintDiv
+	beq $v1,37, PrintMod
+	beq $v1,36, PrintSquare
+	
+	#subroutine for correctly printing added or subtracted numbers
+	PrintAddSub:
+	#load in string of the of the answer to be printed
+	lw $a0, 0($a1)
+	addiu $v0,$0,1 		        # print answer text 
+	syscall 
+	j endofprint
+	
+	#subroutine for correctly printing multiplied numbers
+	PrintMult:
+	#load in string of the of the answer to be printed
+	addiu $v0,$0,4 		        # print answer text 
+	syscall 
+	j endofprint
+	
+	
+	#subroutine for correctly printing divided numbers, both the quotient and remainder are printed
+	PrintDiv:
+	#load in string of the of the answer to be printed
+	addiu $v0,$0,4 		        # print answer text 
+	syscall 
+	la $a0,remainderprompt		#prints the prompt for the remainder since it is only used once
+	addiu $v0,$0,4 		        # print remainder text 
+	syscall 
+	#load in string of the of the remainder to be printed
+	addiu $v0,$0,4 		        # print remainder text 
+	syscall 
+	j endofprint
+	
+	PrintMod:
+	
+	
+	
+	j endofprint
+	
+	PrintSquare:
+	
+	j endofprint
+	
+	
+	
+	
+	#label for everything to jump to so that we can print a hard return everytime we print an answer
+	endofprint:	
+	# hard return
+	addi $a0, $0, 0xA 		#ascii code for LF
+	addi $v0, $0, 0xB		 #syscall 11 prints the lower 8 bits of $a0 as an ascii character.
+	syscall
+	
+	jr $ra
 
 
 
