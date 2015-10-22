@@ -6,14 +6,19 @@ stack_end:
 answer_array: .word 0:10
 number:	.word 0
 ColorTable:
-.word 0x000000	#black
-.word 0x0000ff	#blue 
-.word 0x00ff00	#green
-.word 0xff0000	#red
-.word 0x00ffff	#blue + green
-.word 0xffff00	#blue + red
-.word 0xffff00	#green +red
-.word 0xffffff	#white
+	.word 0x000000	#black
+	.word 0x0000ff	#blue 
+	.word 0x00ff00	#green
+	.word 0xff0000	#red
+	.word 0x00ffff	#blue + green (cyan)
+	.word 0xffff00	#blue + red   (magenta) 
+	.word 0xffff00	#green +red   (red)
+	.word 0xffffff	#white
+BoxTable:
+	.word '1', 1, 1, 'B'
+	.word '2', 17, 1, 'G'
+	.word '3', 1, 17, 'R'
+	.word '4', 1, 1, 'Y'
 you_lose: .asciiz "You lose! :("
 you_win: .asciiz "YOU WIN! GOOD JOB!"
 .text
@@ -22,9 +27,9 @@ you_win: .asciiz "YOU WIN! GOOD JOB!"
 ##################################################################################################
 main:
 	la $sp, stack_end	
-	la $a3,answer_array #a3 will point to the beginning of the array of correct numbers
+	la $a3,answer_array 	#a3 will point to the beginning of the array of correct numbers
 new_level:
-	add $t6, $t6, 1
+	add $s0, $s0, 1
 	la $a3,answer_array	#loads the address of my array into $a3 as we will/have messed with where that is pointing
 	jal random0		#random number generator0, used for all random numbers
 				#prints out a new line for readability
@@ -32,12 +37,12 @@ new_level:
 	li $v0, 11		#print char
 	syscall
 level:
-	#add $t6, $t6, 1
+	#add $s0, $s0, 1
 	la $a3,answer_array	#loads the address of my array into $a3 as we will/have messed with where that is pointing
-	jal display 		#will take in two arguments, the pointer to the array and the level we are on $t6, (0-9)
+	jal display 		#will take in two arguments, the pointer to the array and the level we are on $s0, (0-9)
 	la $a3,answer_array	#loads the address of my array into $a3 as we will/have messed with where that is pointing
 	jal user_input		#takes us to where the user inputs numbers, loops internally based off of level
-	bne $t6, 5, new_level
+	bne $s0, 5, new_level
 youwin: 			#simple procedure for printing out a new line and you win
 	addi $a0,$0,0xA
 	li $v0, 11
@@ -59,7 +64,7 @@ random0:
 	li $a1,0
 	addi $sp,$sp,-4		#moves the stack pointer -4
 	sw $ra, 4($sp)		#save $ra to the stack
-	jal adjust_array 	#takes in two arguements, the level we are on (0-9) $t6, and the pointer to the array $a3
+	jal adjust_array 	#takes in two arguements, the level we are on (0-9) $s0, and the pointer to the array $a3
 	lw $ra, 4($sp)		#moves the stack pointer 4
 	addi $sp,$sp,-4		#moves the stack pointer -4
 	li $v0,30
@@ -100,12 +105,12 @@ endcheck:
 
 ######################################################################################	
 #pointer to the addess of the number to be printed, will later be a color
-#level count is in $t6
-#t5 will be local loop counter
+#level count is in $s0
+#s1 will be local loop counter
 ######################################################################################
 display:
 	#need to make it loop in here based off what evel we are on
-	li $t5,0	#reset the loop counter for each time we enter the display from main
+	li $s1,0	#reset the loop counter for each time we enter the display from main
 displayloop:
 	addi $sp,$sp,-4	#moves the stack pointer -4
 	sw $ra, 4($sp)	#save $ra to the stack
@@ -122,8 +127,8 @@ displayloop:
 	lw $ra, 4($sp) #restore $ra from the stack
 	lw $a0, 8($sp) #restore $a0 from the stack
 	addi $sp,$sp,8 #moves the stack pointer 8
-	add $t5, $t5, 1
-	bne $t5, $t6, displayloop #loop if we still have more input to cover
+	add $s1, $s1, 1
+	bne $s1, $s0, displayloop #loop if we still have more input to cover
 	addi $a0,$0,0xA		#prints a new line character to make things much more readable
 	li $v0, 11
 	syscall
@@ -132,12 +137,12 @@ displayloop:
 
 ###########################################################################################
 #$a3 will be the array where the correct answer is that we are comparing to
-#$t6 holds the loop count from the main loop
+#$s0 holds the loop count from the main loop
 # will branch to you lose or win from here
 #########################################################################################
 user_input:
 	#will have to loop and check input for each number ented comparing it to each entry in the string
-	li $t5, 0
+	li $s1, 0
 user_inputloop:
 	li $v0,12
 	syscall
@@ -152,8 +157,8 @@ user_inputloop:
 	jal check
 	lw $ra, 4($sp)	#restore $ra from the stack
 	addi $sp,$sp,4	#moves the stack pointer 4
-	add $t5, $t5, 1
-	bne $t5, $t6, user_inputloop #loops to match the level we are on as determined by the main function
+	add $s1, $s1, 1
+	bne $s1, $s0, user_inputloop #loops to match the level we are on as determined by the main function
 	jr $ra
 ########################################################################################	
 #waits 500 ms...will make more sense when displaying squares, for now just a place holder
@@ -176,13 +181,13 @@ wait500:
 #takes a counter of how much offset from the beginning of the array that the value is going to be stored
 ##############################################################################################################
 adjust_array:
-#load counter into $t6
-	beq $t6,1, end_adjust
-	beq $t6,2, add4
-	beq $t6,3, add8
-	beq $t6,4, add12
-	beq $t6,5, add16
-	beq $t6,6, add20
+#load counter into $s0
+	beq $s0,1, end_adjust
+	beq $s0,2, add4
+	beq $s0,3, add8
+	beq $s0,4, add12
+	beq $s0,5, add16
+	beq $s0,6, add20
 
 add4:
 	add $a3, $a3, 4
@@ -204,12 +209,12 @@ end_adjust:
 	
 
 #######################################################
-#t5 tells us whether to increment or not
+#s1 tells us whether to increment or not
 #increments the pointer to the array on $a3
 ########################################################
 increment_array:
-	beq $t5,0, end_increment
-	bne $t5,0, increment4
+	beq $s1,0, end_increment
+	bne $s1,0, increment4
 	
 increment4:
 	add $a3, $a3, 4
@@ -224,15 +229,19 @@ end_increment:
 
 #############################################################
 #calc address
+#a0 is x coordinate
+#a1 is y cooridinate
+#$v0 is the address in memory we want to draw our dot 
 #############################################################
 calcaddress:
 	sll $t0, $a0, 2
 	sll $t1, $a1, 7
-	add $v0, $t1, $t2
+	add $v0, $t1, $t0
 	add $v0, $v0, 0x10040000
 	jr $ra
 #############################################################
 #get color
+#uses the vale stored in $a2 to get the color from the color table
 #############################################################
 getcolor:
 	la $t0, ColorTable
@@ -256,11 +265,79 @@ drawdot:
 	lw $ra, 4($sp)
 	addiu $sp,$sp, 8
 	jr $ra
+
+
 #############################################################
-#draw a line
+#draw a horizontal line
 #############################################################
+HorzLine:
+	addiu $sp,$sp, -4
+	sw $ra, 4($sp)
+HorzLoop:
+	addiu $sp,$sp, -12
+	sw $a0, 12($sp)
+	sw $a1, 8($sp)
+	sw $a2, 4($sp)
+	jal drawdot
+	lw $a0, 12($sp)
+	lw $a1, 8($sp)
+	lw $a2, 4($sp)
+	addiu $sp,$sp, 12
+	addiu $a0,$a0, 1
+	addiu $a3,$a3, -1
+	bne   $a3,$0, HorzLoop
+	lw $ra, 4($sp)
+	addiu $sp,$sp, 4
+	jr $ra
+
+	
+#############################################################
+#draw a vertical line
+#############################################################
+VertLine:
+	addiu $sp,$sp, -4
+	sw $ra, 4($sp)
+VertLoop:
+	addiu $sp,$sp, -12
+	sw $a0, 12($sp)
+	sw $a1, 8($sp)
+	sw $a2, 4($sp)
+	jal drawdot
+	lw $a0, 12($sp)
+	lw $a1, 8($sp)
+	lw $a2, 4($sp)
+	addiu $sp,$sp, 12
+	addiu $a1,$a1, 1
+	addiu $a3,$a3, -1
+	bne   $a3,$0, VertLoop
+	lw $ra, 4($sp)
+	addiu $sp,$sp, 4
+	jr $ra
+		
 
 #############################################################
 #draw a box
 #############################################################
+DrawBox:
+	add $s2, $a3, 0
+	addiu $sp,$sp, -4
+	sw $ra, 4($sp)
+BoxLoop:
+	addiu $sp,$sp, -20
+	sw $a0, 16($sp)
+	sw $a1, 12($sp)
+	sw $a2, 8($sp)
+	sw $a3, 4($sp)
+	jal HorzLine
+	lw $a0, 16($sp)
+	lw $a1, 12($sp)
+	lw $a2, 8($sp)
+	lw $a3, 4($sp)
+	addiu $sp,$sp, 20
+	addiu $a1, $a1, 1
+	addiu $s2,$s2,-1
+	bne $s2,$0, BoxLoop
+	lw $ra, 4($sp)
+	addiu $sp,$sp, 4
+	jr $ra
 
