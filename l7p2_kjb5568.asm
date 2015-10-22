@@ -118,15 +118,17 @@ displayloop:
 	lw $ra, 4($sp)	#moves the stack pointer 4
 	addi $sp,$sp,4	#restore $ra from the stack
 	lw $a0, 0($a3)
-	li $v0, 1
-	syscall
-	addi $sp,$sp,-8 #moves the stack pointer -8
+	################################### draw a box
+	addi $sp,$sp,-4	#moves the stack pointer -4
 	sw $ra, 4($sp)	#save $ra to the stack
-	sw $a0, 8($sp)	#save $a0 to the stack
-	jal wait500
-	lw $ra, 4($sp) #restore $ra from the stack
-	lw $a0, 8($sp) #restore $a0 from the stack
-	addi $sp,$sp,8 #moves the stack pointer 8
+	sw $a0, 0($sp)
+	jal DisplayBox
+	lw $a0, 0($sp)
+	lw $ra, 4($sp)	#moves the stack pointer 4
+	addi $sp,$sp,4	#restore $ra from the stack
+	######################################### end draw
+	#li $v0, 1
+	#syscall
 	add $s1, $s1, 1
 	bne $s1, $s0, displayloop #loop if we still have more input to cover
 	addi $a0,$0,0xA		#prints a new line character to make things much more readable
@@ -224,8 +226,88 @@ end_increment:
 	
 	
 #############################################################
-#print functions will follow
+#Display functions will follow
 #############################################################
+
+#############################################################
+DisplayBox:
+	addiu $sp,$sp, -4
+	sw $ra, 4($sp)
+	sw $a0, 0($sp)
+	#a0 has number correlating to box that we need to draw
+	add $t0, $a0, 0
+	beq $t0, 1, one
+	beq $t0, 2, two
+	beq $t0, 3, three
+	beq $t0, 4, four
+	
+one:
+	li $a0, 1
+	li $a1, 1
+	li $a2, 6
+	li $a3, 5
+	j printbox
+two:
+	li $a0, 17
+	li $a1, 1
+	li $a2, 1
+	li $a3, 5
+	j printbox
+three:
+	li $a0, 1
+	li $a1, 17
+	li $a2, 2
+	li $a3, 5
+	j printbox
+four:
+	li $a0, 17
+	li $a1, 17 
+	li $a2, 3
+	li $a3, 5
+
+printbox:
+	addiu $sp,$sp, -20
+	sw $a0, 16($sp)
+	sw $a1, 12($sp)
+	sw $a2, 8($sp)
+	sw $a3, 4($sp)
+	jal DrawBox
+	lw $a0, 16($sp)
+	lw $a1, 12($sp)
+	lw $a2, 8($sp)
+	lw $a3, 4($sp)
+	addiu $sp,$sp, 20
+	addiu $sp,$sp, -20
+	sw $a0, 16($sp)
+	sw $a1, 12($sp)
+	sw $a2, 8($sp)
+	sw $a3, 4($sp)
+	jal wait500
+	lw $a0, 16($sp)
+	lw $a1, 12($sp)
+	lw $a2, 8($sp)
+	lw $a3, 4($sp)
+	addiu $sp,$sp, 20
+	li $a2, 0
+	addiu $sp,$sp, -20
+	sw $a0, 16($sp)
+	sw $a1, 12($sp)
+	sw $a2, 8($sp)
+	sw $a3, 4($sp)
+	jal DrawBox
+	lw $a0, 16($sp)
+	lw $a1, 12($sp)
+	lw $a2, 8($sp)
+	lw $a3, 4($sp)
+	addiu $sp,$sp, 20
+	lw $a0, 0($sp)
+	lw $ra, 4($sp)
+	addiu $sp, $sp, 4
+	jr $ra
+	
+
+
+
 
 #############################################################
 #calc address
