@@ -20,13 +20,14 @@ BoxTable:
 	.word '3', 1, 17, 'R'
 	.word '4', 1, 1, 'Y'
 you_lose: .asciiz "You lose! :("
-you_win: .asciiz "YOU WIN! GOOD JOB!"
+you_win: .asciiz "YOU WIN!!"
 .text
 #################################################################################################
 #main loop
 ##################################################################################################
 main:
-	la $sp, stack_end	
+	la $sp, stack_end
+	jal DrawLines	
 	la $a3,answer_array 	#a3 will point to the beginning of the array of correct numbers
 new_level:
 	add $s0, $s0, 1
@@ -119,13 +120,15 @@ displayloop:
 	addi $sp,$sp,4	#restore $ra from the stack
 	lw $a0, 0($a3)
 	################################### draw a box
-	addi $sp,$sp,-4	#moves the stack pointer -4
+	addi $sp,$sp,-8	#moves the stack pointer -4
 	sw $ra, 4($sp)	#save $ra to the stack
+	sw $a3, 8($sp)
 	sw $a0, 0($sp)
 	jal DisplayBox
 	lw $a0, 0($sp)
+	lw $a3, 8($sp)
 	lw $ra, 4($sp)	#moves the stack pointer 4
-	addi $sp,$sp,4	#restore $ra from the stack
+	addi $sp,$sp,8	#restore $ra from the stack
 	######################################### end draw
 	#li $v0, 1
 	#syscall
@@ -154,6 +157,14 @@ user_inputloop:
 	jal increment_array
 	lw $ra, 4($sp) #restore $ra from the stack
 	addi $sp,$sp,4	#moves the stack pointer 4
+	#need to draw a box here
+	addiu $sp,$sp, -8
+	sw $ra, 4($sp)
+	sw $a3, 8($sp)
+	jal DisplayBox
+	lw $a3, 8($sp)
+	lw $ra, 4($sp)
+	addiu $sp,$sp, -8
 	addi $sp,$sp,-4	#moves the stack pointer -4
 	sw $ra, 4($sp)	#save $ra to the stack
 	jal check
@@ -236,34 +247,32 @@ DisplayBox:
 	sw $a0, 0($sp)
 	#a0 has number correlating to box that we need to draw
 	add $t0, $a0, 0
+	li $a3, 10
 	beq $t0, 1, one
 	beq $t0, 2, two
 	beq $t0, 3, three
 	beq $t0, 4, four
 	
 one:
-	li $a0, 1
-	li $a1, 1
+	li $a0, 4
+	li $a1, 4
 	li $a2, 6
-	li $a3, 5
 	j printbox
 two:
-	li $a0, 17
-	li $a1, 1
+	li $a0, 20
+	li $a1, 4
 	li $a2, 1
-	li $a3, 5
 	j printbox
 three:
-	li $a0, 1
-	li $a1, 17
+	li $a0, 4
+	li $a1, 20
 	li $a2, 2
-	li $a3, 5
+
 	j printbox
 four:
-	li $a0, 17
-	li $a1, 17 
+	li $a0, 20
+	li $a1, 20 
 	li $a2, 3
-	li $a3, 5
 
 printbox:
 	addiu $sp,$sp, -20
@@ -295,6 +304,17 @@ printbox:
 	sw $a2, 8($sp)
 	sw $a3, 4($sp)
 	jal DrawBox
+	lw $a0, 16($sp)
+	lw $a1, 12($sp)
+	lw $a2, 8($sp)
+	lw $a3, 4($sp)
+	addiu $sp,$sp, 20
+	addiu $sp,$sp, -20
+	sw $a0, 16($sp)
+	sw $a1, 12($sp)
+	sw $a2, 8($sp)
+	sw $a3, 4($sp)
+	jal wait500
 	lw $a0, 16($sp)
 	lw $a1, 12($sp)
 	lw $a2, 8($sp)
@@ -422,4 +442,30 @@ BoxLoop:
 	lw $ra, 4($sp)
 	addiu $sp,$sp, 4
 	jr $ra
-
+###############################################################
+#draw lines
+###############################################################
+DrawLines:
+	addiu $sp, $sp, -4
+	sw $ra, 4($sp)
+	
+	li $a0, 0
+	li $a1, 16
+	li $a2, 7
+	li $a3, 32
+	jal HorzLine
+	
+	li $a0, 16
+	li $a1, 0
+	li $a2, 7
+	li $a3, 32
+	jal VertLine
+	
+	li $a0, 0
+	li $a1, 0
+	li $a2, 0
+	li $a3, 0
+	
+	lw $ra, 4($sp)
+	addiu $sp, $sp, 4
+	jr $ra
