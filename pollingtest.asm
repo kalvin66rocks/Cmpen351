@@ -13,38 +13,66 @@ ColorTable:
 .word 0xffff00	#green +red   (yellow)
 .word 0xffffff	#white
 
-.text 
+
+.ktext 0x80000180
+
+move $k0, $a0
+move $k1, $v0
+mfc0 $a0, $13
+andi $a0, $a0, 0x3c
+srl $a0,$a0, 2
+li $v0, 1
+syscall
+move $a0, $k0
+move $v0, $k1
+eret 
+
+
+
+.text
 
 main:
 
-	
-	li $a0, 3
-	li $a1, 3
-	li $a2, 1
-	li $a3, 80
-	jal DrawBox
-	
-#	li $a0, 9
-#	li $a1, 9
-#	li $a2, 6
-#	li $a3, 4
-#	jal DrawBox
-
-	li $a0, 100
-	li $a1, 100
-	li $a2, 1
-	li $a3, 40
-	jal DiagLine
-	
-	
-	
-	
+li $a0, 3
+li $a1, 3
+li $a2, 1
+li $a3, 80
+jal DrawBox
+jal GetChar
+beq $a0, 57, exit_program
+j main
 
 exit_program:			#exits the program
 	li      $v0, 10
         syscall
+###########################################################
+#functions
+###########################################################
+IsCharThere:
+	lui $t0,0xffff
+	lw $t1, 0($t0)
+	andi $v0, $t1, 1
+	jr $ra
 
-
+GetChar:
+	addiu $sp, $sp, -4
+	sw $ra, 0($sp)
+	j gocheck
+	
+cloop:  #sleep
+gocheck:
+	jal IsCharThere
+	beq $v0, $0, cloop
+	lui $t0, 0xffff
+	lw $v0, 4($t0)
+	lw $ra,0($sp)
+	addiu $sp, $sp, 4
+	move $a0, $v0	#just for testing
+	li $v0, 11	#just for testing
+	syscall		#just for testing
+	jr $ra
+	
+	
 #############################################################
 #calc address
 #############################################################
@@ -177,6 +205,3 @@ DiagLoop:
 	lw $ra, 4($sp)
 	addiu $sp,$sp, 4
 	jr $ra
-
-
-
