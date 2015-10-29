@@ -3,6 +3,10 @@ stack_beg:
         .word   0 : 60
 stack_end:
 
+queue:
+	.word 0: 10
+
+
 ColorTable:
 .word 0x000000	#black
 .word 0x0000ff	#blue 
@@ -14,31 +18,63 @@ ColorTable:
 .word 0xffffff	#white
 
 
-.ktext 0x80000180
+.ktext 0x80000080
 
 move $k0, $a0
 move $k1, $v0
 mfc0 $a0, $13
-andi $a0, $a0, 0x3c
+andi $a0, $a0, 0x003c
 srl $a0,$a0, 2
-li $v0, 1
+li $v0, 11
+syscall
+la   $a0, msg  # address of string to print
+li   $v0, 4    # Print String service
 syscall
 move $a0, $k0
 move $v0, $k1
 eret 
 
+.ktext 0x80000180
 
+move $k0, $a0
+move $k1, $v0
+mfc0 $a0, $13
+andi $a0, $a0, 0x003c
+srl $a0,$a0, 2
+li $v0, 11
+syscall
+la   $a0, msg  # address of string to print
+li   $v0, 4    # Print String service
+syscall
+move $a0, $k0
+move $v0, $k1
+eret 
+
+   .kdata	
+msg:   
+   .asciiz "Trap generated"
 
 .text
 
+
 main:
 
+jal GetChar
 li $a0, 3
 li $a1, 3
 li $a2, 1
-li $a3, 80
+li $a3, 40
 jal DrawBox
-jal GetChar
+li $a0, 3
+li $a1, 3
+li $a2, 2
+li $a3, 40
+jal DrawBox
+li $a0, 3
+li $a1, 3
+li $a2, 3
+li $a3, 40
+jal DrawBox
 beq $a0, 57, exit_program
 j main
 
