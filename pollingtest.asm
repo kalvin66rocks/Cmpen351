@@ -18,36 +18,25 @@ ColorTable:
 .word 0xffffff	#white
 
 
-.ktext 0x80000080
-
-move $k0, $a0
-move $k1, $v0
-mfc0 $a0, $13
-andi $a0, $a0, 0x003c
-srl $a0,$a0, 2
-li $v0, 11
-syscall
-la   $a0, msg  # address of string to print
-li   $v0, 4    # Print String service
-syscall
-move $a0, $k0
-move $v0, $k1
-eret 
 
 .ktext 0x80000180
 
 move $k0, $a0
 move $k1, $v0
-mfc0 $a0, $13
-andi $a0, $a0, 0x003c
-srl $a0,$a0, 2
-li $v0, 11
-syscall
-la   $a0, msg  # address of string to print
-li   $v0, 4    # Print String service
-syscall
+lui $t0, 0xffff
+lw  $v0, 4($t0)
+la $t1,queue
+mul $s0, $s0, 4
+add $t1, $s0, $t1
+sw $v0, 0($t1)
+move $a0, $v0	#just for testing
+li $v0, 11	#just for testing
+syscall		#just for testing
+#jal GetChar
+addi $s0, $s0, 1
 move $a0, $k0
 move $v0, $k1
+mtc0 $0, $13
 eret 
 
    .kdata	
@@ -56,10 +45,12 @@ msg:
 
 .text
 
-
+lui $t0, 0xffff
+ori $a0, $0, 2
+sw $a0, 0($t0)
 main:
 
-jal GetChar
+#jal GetChar
 li $a0, 3
 li $a1, 3
 li $a2, 1
