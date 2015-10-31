@@ -42,8 +42,44 @@ BoxTable:
 	.word '2', 17, 1, 'G'
 	.word '3', 1, 17, 'R'
 	.word '4', 1, 1, 'Y'
+	
+Colors: .word   0x000000        # background color (black)
+        .word   0xffffff        # foreground color (white)
+
+DigitTable:
+        .byte   ' ', 0,0,0,0,0,0,0,0,0,0,0,0
+        .byte   '0', 0x7e,0xff,0xc3,0xc3,0xc3,0xc3,0xc3,0xc3,0xc3,0xc3,0xff,0x7e
+        .byte   '1', 0x38,0x78,0xf8,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18
+        .byte   '2', 0x7e,0xff,0x83,0x06,0x0c,0x18,0x30,0x60,0xc0,0xc1,0xff,0x7e
+        .byte   '3', 0x7e,0xff,0x83,0x03,0x03,0x1e,0x1e,0x03,0x03,0x83,0xff,0x7e
+        .byte   '4', 0xc3,0xc3,0xc3,0xc3,0xc3,0xff,0x7f,0x03,0x03,0x03,0x03,0x03
+        .byte   '5', 0xff,0xff,0xc0,0xc0,0xc0,0xfe,0x7f,0x03,0x03,0x83,0xff,0x7f
+        .byte   '6', 0xc0,0xc0,0xc0,0xc0,0xc0,0xfe,0xfe,0xc3,0xc3,0xc3,0xff,0x7e
+        .byte   '7', 0x7e,0xff,0x03,0x06,0x06,0x0c,0x0c,0x18,0x18,0x30,0x30,0x60
+        .byte   '8', 0x7e,0xff,0xc3,0xc3,0xc3,0x7e,0x7e,0xc3,0xc3,0xc3,0xff,0x7e
+        .byte   '9', 0x7e,0xff,0xc3,0xc3,0xc3,0x7f,0x7f,0x03,0x03,0x03,0x03,0x03
+        .byte   '+', 0x00,0x00,0x00,0x18,0x18,0x7e,0x7e,0x18,0x18,0x00,0x00,0x00
+        .byte   '-', 0x00,0x00,0x00,0x00,0x00,0x7e,0x7e,0x00,0x00,0x00,0x00,0x00
+        .byte   '*', 0x00,0x00,0x00,0x66,0x3c,0x18,0x18,0x3c,0x66,0x00,0x00,0x00
+        .byte   '/', 0x00,0x00,0x18,0x18,0x00,0x7e,0x7e,0x00,0x18,0x18,0x00,0x00
+        .byte   '=', 0x00,0x00,0x00,0x00,0x7e,0x00,0x7e,0x00,0x00,0x00,0x00,0x00
+        .byte   'A', 0x18,0x3c,0x66,0xc3,0xc3,0xc3,0xff,0xff,0xc3,0xc3,0xc3,0xc3
+        .byte   'B', 0xfc,0xfe,0xc3,0xc3,0xc3,0xfe,0xfe,0xc3,0xc3,0xc3,0xfe,0xfc
+        .byte   'C', 0x7e,0xff,0xc1,0xc0,0xc0,0xc0,0xc0,0xc0,0xc0,0xc1,0xff,0x7e
+        .byte   'D', 0xfc,0xfe,0xc3,0xc3,0xc3,0xc3,0xc3,0xc3,0xc3,0xc3,0xfe,0xfc
+        .byte   'E', 0xff,0xff,0xc0,0xc0,0xc0,0xfe,0xfe,0xc0,0xc0,0xc0,0xff,0xff
+        .byte   'F', 0xff,0xff,0xc0,0xc0,0xc0,0xfe,0xfe,0xc0,0xc0,0xc0,0xc0,0xc0
+# add additional characters here....
+# first byte is the ascii character
+# next 12 bytes are the pixels that are "on" for each of the 12 lines
+        .byte    0, 0,0,0,0,0,0,0,0,0,0,0,0
+
 you_lose: .asciiz "You lose! :("
 you_win: .asciiz "YOU WIN!!"
+one_panda: .asciiz "1"
+two_panda: .asciiz "2"
+three_panda: .asciiz "3"
+four_panda: .asciiz "4"
 .text
 #################################################################################################
 #main loop
@@ -115,8 +151,80 @@ check:
 	bne $t0,$a0 ,incorrect	#branches if the righ number was entered
 	
 correct: 
+	addiu $sp,$sp, -20
+	sw $v0, 20($sp)
+	sw $a0, 16($sp)
+	sw $a1, 12($sp)
+	sw $a2, 8($sp)
+	sw $a3, 4($sp)
+	#goin to branch and play sounds based off what is in $t0
+	beq $t0, 1, soundone
+	beq $t0, 2, soundtwo
+	beq $t0, 3, soundthree
+	beq $t0, 4, soundfour
+
+soundone:
+	li $a0, 67
+	li $a1, 250
+	li $a2, 40
+	li $a3, 127
+	li $v0, 33
+	syscall
+	j soundend	
+soundtwo:
+	li $a0, 68
+	li $a1, 250
+	li $a2, 40
+	li $a3, 127
+	li $v0, 33
+	syscall
+	j soundend
+
+soundthree:
+	li $a0, 69
+	li $a1, 250
+	li $a2, 40
+	li $a3, 127
+	li $v0, 33
+	syscall
+	j soundend
+
+soundfour:
+	li $a0, 70
+	li $a1, 250
+	li $a2, 40
+	li $a3, 127
+	li $v0, 33
+	syscall		
+	
+soundend:	
+	lw $v0, 20($sp)
+	lw $a0, 16($sp)
+	lw $a1, 12($sp)
+	lw $a2, 8($sp)
+	lw $a3, 4($sp)
+	addiu $sp,$sp, 20
 	j endcheck	#if we are correct then jump and move on
 incorrect:
+	move $a0, $t0
+	addiu $sp,$sp, -20
+	sw $v0, 20($sp)
+	sw $a0, 16($sp)
+	sw $a1, 12($sp)
+	sw $a2, 8($sp)
+	sw $a3, 4($sp)
+	li $a0, 65
+	li $a1, 250
+	li $a2, 40
+	li $a3, 127
+	li $v0, 33
+	syscall
+	lw $v0, 20($sp)
+	lw $a0, 16($sp)
+	lw $a1, 12($sp)
+	lw $a2, 8($sp)
+	lw $a3, 4($sp)
+	addiu $sp,$sp, 20
 	addiu $sp,$sp, -8
 	sw $ra, 4($sp)
 	sw $a3, 8($sp)
@@ -284,6 +392,7 @@ DisplayBox:
 	sw $a0, 0($sp)
 	#a0 has number correlating to box that we need to draw
 	add $t0, $a0, 0
+	add $s7, $t0, 0
 	li $a3, 60
 	beq $t0, 1, one
 	beq $t0, 2, two
@@ -318,6 +427,54 @@ printbox:
 	sw $a2, 8($sp)
 	sw $a3, 4($sp)
 	jal DrawCircle
+	lw $a0, 16($sp)
+	lw $a1, 12($sp)
+	lw $a2, 8($sp)
+	lw $a3, 4($sp)
+	addiu $sp,$sp, 20
+	#will need to do some bracnhes here to determine which number to display. 
+	#will still use the value stored in ( somewhere i need to store it again.
+	#then call panda's function.
+	addiu $sp,$sp, -20
+	sw $a0, 16($sp)
+	sw $a1, 12($sp)
+	sw $a2, 8($sp)
+	sw $a3, 4($sp)
+	#save the arguements for our shapes so we can draw numbers
+	beq $s7, 1, numone
+	beq $s7, 2, numtwo
+	beq $s7, 3, numthree
+	beq $s7, 4, numfour
+	#put draw number functions in here, one corresponding to each of the spots it could be in
+
+numone:
+	li      $a0, 125
+        li      $a1, 45
+        la      $a2, one_panda
+        jal     OutText
+        j shapes
+
+numtwo:
+	li      $a0, 200
+        li      $a1, 125
+        la      $a2, two_panda
+        jal     OutText	
+	j shapes
+
+numthree:
+	li      $a0, 125
+        li      $a1, 195
+        la      $a2, three_panda
+        jal     OutText
+        j shapes
+
+numfour:
+	li      $a0, 55
+        li      $a1, 125
+        la      $a2, four_panda
+        jal     OutText	
+
+shapes:
 	lw $a0, 16($sp)
 	lw $a1, 12($sp)
 	lw $a2, 8($sp)
@@ -672,5 +829,68 @@ drawdiag:
 	lw $ra, 4($sp)
 	addiu $sp,$sp,4
 	jr $ra
+	
+#########################################################################################
+#font code that panda was nice enought to give us :)
+#########################################################################################
+OutText:
+        addiu   $sp, $sp, -24
+        sw      $ra, 20($sp)
+
+        li      $t8, 1          # line number in the digit array (1-12)
+_text1:
+        la      $t9, 0x10040000 # get the memory start address
+        sll     $t0, $a0, 2     # assumes mars was configured as 256 x 256
+        addu    $t9, $t9, $t0   # and 1 pixel width, 1 pixel height
+        sll     $t0, $a1, 10    # (a0 * 4) + (a1 * 4 * 256)
+        addu    $t9, $t9, $t0   # t9 = memory address for this pixel
+
+        move    $t2, $a2        # t2 = pointer to the text string
+_text2:
+        lb      $t0, 0($t2)     # character to be displayed
+        addiu   $t2, $t2, 1     # last character is a null
+        beq     $t0, $zero, _text9
+
+        la      $t3, DigitTable # find the character in the table
+_text3:
+        lb      $t4, 0($t3)     # get an entry from the table
+        beq     $t4, $t0, _text4
+        beq     $t4, $zero, _text4
+        addiu   $t3, $t3, 13    # go to the next entry in the table
+        j       _text3
+_text4:
+        addu    $t3, $t3, $t8   # t8 is the line number
+        lb      $t4, 0($t3)     # bit map to be displayed
+
+        sw      $zero, 0($t9)   # first pixel is black
+        addiu   $t9, $t9, 4
+
+        li      $t5, 8          # 8 bits to go out
+_text5:
+        la      $t7, Colors
+        lw      $t7, 0($t7)     # assume black
+        andi    $t6, $t4, 0x80  # mask out the bit (0=black, 1=white)
+        beq     $t6, $zero, _text6
+        la      $t7, Colors     # else it is white
+        lw      $t7, 4($t7)
+_text6:
+        sw      $t7, 0($t9)     # write the pixel color
+        addiu   $t9, $t9, 4     # go to the next memory position
+        sll     $t4, $t4, 1     # and line number
+        addiu   $t5, $t5, -1    # and decrement down (8,7,...0)
+        bne     $t5, $zero, _text5
+
+        sw      $zero, 0($t9)   # last pixel is black
+        addiu   $t9, $t9, 4
+        j       _text2          # go get another character
+
+_text9:
+        addiu   $a1, $a1, 1     # advance to the next line
+        addiu   $t8, $t8, 1     # increment the digit array offset (1-12)
+        bne     $t8, 13, _text1
+
+        lw      $ra, 20($sp)
+        addiu   $sp, $sp, 24
+        jr      $ra
 
 
