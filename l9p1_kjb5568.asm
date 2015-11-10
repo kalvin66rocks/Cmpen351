@@ -7,23 +7,20 @@ total:		.float 0.0
 number: 	.float 5.0
 
 space:		.asciiz " "
-prompt: .asciiz "Enter the number of floats to enter :"
+prompt: .asciiz "Enter 5 floats: "
+average: .asciiz "The average is: "
 .text
 main:
 	la $t0, unsorted_array
 	la $a0, prompt
 	li $v0, 4
 	syscall	#print the prompt out to the user
-	li $v0, 5
-	syscall	#get the input for the number of floats to enter
-	move $t1, $v0
-	#following two lines validate user input to be between 2 and 20
-	bgt $t1, 20, main
-	blt $t1, 2, main
-	move $s0, $t1 #stores tha number for later user
-	#the next two lines store and conver the number entered to be used in division for the average
-	mtc1 $t1, $f8 
-	cvt.s.w $f5, $f8
+	addi $a0,$0,0xA		#print a new line
+	li $v0, 11
+	syscall
+	l.s $f5, number
+	addiu $t1, $t1, 5
+	move $s0, $t1
 Loop:
 	li $v0,6
 	syscall # get float from user
@@ -33,11 +30,11 @@ Loop:
 	add.s $f10, $f10, $f0 #add to the total to be used for average
 	bnez $t1, Loop #loop until we get all the numbers that we need
 ######################################
-####Average
-	div.s $f12, $f10, $f5 # calculate the average
-	addi $a0,$0,0xA		#print a new line
-	li $v0, 11
+Average:
+	la $a0, average
+	li $v0, 4
 	syscall
+	div.s $f12, $f10, $f5 # calculate the average
 	li $v0, 2
 	syscall
 	addi $a0,$0,0xA		#print a new line
