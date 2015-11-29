@@ -86,9 +86,17 @@ four_panda: .asciiz "4"
 ##################################################################################################
 main:
 	la $sp, stack_end
+<<<<<<< HEAD
 	jal drawdiag	
 	la $a3,answer_array 	#a3 will point to the beginning of the array of correct numbers
 new_level:
+=======
+	#set the queue pointer to the beginning of queue
+	jal drawdiag	
+	la $a3,answer_array 	#a3 will point to the beginning of the array of correct numbers
+new_level:
+	#make the queue point to the beginning of the queue
+>>>>>>> origin/master
 	add $s0, $s0, 1
 	la $a3,answer_array	#loads the address of my array into $a3 as we will/have messed with where that is pointing
 	jal random0		#random number generator0, used for all random numbers
@@ -158,6 +166,12 @@ correct:
 	sw $a2, 8($sp)
 	sw $a3, 4($sp)
 	#goin to branch and play sounds based off what is in $t0
+<<<<<<< HEAD
+=======
+	li $a1, 250
+	li $a2, 40
+	li $a3, 127
+>>>>>>> origin/master
 	beq $t0, 1, soundone
 	beq $t0, 2, soundtwo
 	beq $t0, 3, soundthree
@@ -165,6 +179,7 @@ correct:
 
 soundone:
 	li $a0, 67
+<<<<<<< HEAD
 	li $a1, 250
 	li $a2, 40
 	li $a3, 127
@@ -178,10 +193,16 @@ soundtwo:
 	li $a3, 127
 	li $v0, 33
 	syscall
+=======
+	j soundend	
+soundtwo:
+	li $a0, 68
+>>>>>>> origin/master
 	j soundend
 
 soundthree:
 	li $a0, 69
+<<<<<<< HEAD
 	li $a1, 250
 	li $a2, 40
 	li $a3, 127
@@ -198,6 +219,15 @@ soundfour:
 	syscall		
 	
 soundend:	
+=======
+	j soundend
+
+soundfour:
+	li $a0, 70	
+soundend:
+	li $v0, 31
+	syscall	
+>>>>>>> origin/master
 	lw $v0, 20($sp)
 	lw $a0, 16($sp)
 	lw $a1, 12($sp)
@@ -293,9 +323,24 @@ displayloop:
 user_input:
 	#will have to loop and check input for each number ented comparing it to each entry in the string
 	li $s1, 0
+<<<<<<< HEAD
 user_inputloop:
 	li $v0,12
 	syscall
+=======
+	#have to load the address of queue into register
+user_inputloop:
+	####code below this will be phased out when interrupts are added
+	li $v0,12
+	syscall
+	############
+	#going to need to handle getting stuff from the queue here
+	#grab form low popsition in queu
+	#put that in $v0
+	
+	#also need to add timeout here while we "wait for the user to put in input
+	#perhaps myabe 5- 10 seconds?
+>>>>>>> origin/master
 	sub $a0,$v0,48 #corrects the character to integer by subtracting 48
 	addi $sp,$sp,-4	#moves the stack pointer -4
 	sw $ra, 4($sp)	#save $ra to the stack
@@ -316,6 +361,11 @@ user_inputloop:
 	lw $ra, 4($sp)	#restore $ra from the stack
 	addi $sp,$sp,4	#moves the stack pointer 4
 	add $s1, $s1, 1
+<<<<<<< HEAD
+=======
+	##########################################
+	#increment the regsiter that is pointing to the queue
+>>>>>>> origin/master
 	bne $s1, $s0, user_inputloop #loops to match the level we are on as determined by the main function
 	jr $ra
 ########################################################################################	
