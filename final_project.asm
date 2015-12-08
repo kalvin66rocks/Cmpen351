@@ -17,92 +17,8 @@ ColorTable:
 
 
 .text
+	jal drawsierpenski
 	
-	#main triangle
-	li $a0, 256
-	li $a1, 180
-	li $a2, 1
-	li $a3, 128
-	jal drawtriangle
-	
-	#three triangles the middle
-	#right
-	li $a0, 384
-	li $a1, 180
-	li $a2, 1
-	li $a3, 64
-	jal drawtriangle
-	#left
-	li $a0, 128
-	li $a1, 180
-	li $a2, 1
-	li $a3, 64
-	jal drawtriangle
-	#bottom
-	li $a0, 256
-	li $a1, 308
-	li $a2, 1
-	li $a3, 64
-	jal drawtriangle
-	
-	#triangles around the right
-	#right
-	li $a0, 448
-	li $a1, 180
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#left
-	li $a0, 320
-	li $a1, 180
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#bottom
-	li $a0, 384
-	li $a1, 244
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#triangles around the left
-	#right
-	li $a0, 192
-	li $a1, 180
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#left
-	li $a0, 64
-	li $a1, 180
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#bottom
-	li $a0, 128
-	li $a1, 244
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#triangles around the bottom
-	#right
-	li $a0, 320
-	li $a1, 308
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#left
-	li $a0, 192
-	li $a1, 308
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#bottom
-	#bottom
-	li $a0, 256
-	li $a1, 372
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
 		
 
 exit_program:			#exits the program
@@ -338,5 +254,111 @@ TriangleLoop:
 	addiu $sp,$sp, 4
 	jr $ra
 	
+###############################################################################################
+#draw sierpenski
+drawsierpenski:
+	addiu $sp, $sp, -4
+	sw $ra, 4($sp)
+	#main triangle
+	li $a0, 256
+	li $a1, 180
+	li $a2, 1
+	li $a3, 128
+	jal drawtriangle
+	
+	#three triangles the middle
+	#right
+	li $a0, 384
+	li $a1, 180
+	li $a2, 1
+	li $a3, 64
+	jal drawtriangle
+	#left
+	li $a0, 128
+	li $a1, 180
+	li $a2, 1
+	li $a3, 64
+	jal drawtriangle
+	#bottom
+	li $a0, 256
+	li $a1, 308
+	li $a2, 1
+	li $a3, 64
+	jal drawtriangle
+	
+	#triangles around the right
+	#right
+	li $a0, 448
+	li $a1, 180
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#left
+	li $a0, 320
+	li $a1, 180
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#bottom
+	li $a0, 384
+	li $a1, 244
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#triangles around the left
+	#right
+	li $a0, 192
+	li $a1, 180
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#left
+	li $a0, 64
+	li $a1, 180
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#bottom
+	li $a0, 128
+	li $a1, 244
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#triangles around the bottom
+	#right
+	li $a0, 320
+	li $a1, 308
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#left
+	li $a0, 192
+	li $a1, 308
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#bottom
+	#bottom
+	li $a0, 256
+	li $a1, 372
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	
+	
+	lw $ra,4($sp)
+	addiu $sp,$sp, 4
+	jr $ra
+	
+draw_cantor_dust:
+	addiu $sp, $sp, -4
+	sw $ra, 4($sp)
+
+
+	
+
+	lw $ra,4($sp)
+	addiu $sp,$sp, 4
+	jr $ra
 
 	
