@@ -21,7 +21,7 @@ Colors:
 	.word   0xffffff        # background color (white)
         
 
-DigitTable:
+DigitTable:   #original font written by Robin Panda.
         .byte   ' ', 0,0,0,0,0,0,0,0,0,0,0,0
         .byte   '0', 0x7e,0xff,0xc3,0xc3,0xc3,0xc3,0xc3,0xc3,0xc3,0xc3,0xff,0x7e
         .byte   '1', 0x38,0x78,0xf8,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18
@@ -71,20 +71,212 @@ DigitTable:
 # next 12 bytes are the pixels that are "on" for each of the 12 lines
         .byte    0, 0,0,0,0,0,0,0,0,0,0,0,0
 
-
-
+triangle_text: .asciiz "SIERPINSKI TRIANGLE"
+triangle_text1: .asciiz "A SIERPINSKI TRIANGLE IS MADE BY DRAWING A "
+triangle_text2: .asciiz "TRIANGLE THEN DRAWING THREE TRIANGLES AROUND"
+triangle_text3: .asciiz "IT THAT ARE 1/3 OF THE SIZE REPEATING THIS "
+triangle_text4: .asciiz "UNTIL THE SUB TRIANGLES ARE TOO SMALL TO SEE "
+triangle_text5: .asciiz "PRESS 1 TO CONTINUE "
+main_text_line_1: .asciiz " WELCOME TO MY FRACTAL DRAWER"
+main_text_line_2: .asciiz "PLEASE HIT THE NUMBER CORRESPONDING"    
+main_text_line_3: .asciiz "TO THE FRACTAL THAT YOU WOULD LIKE TO SEE"
+choice_1: .asciiz "1    SIERPINSKI TRIANGLE"	
+choice_2: .asciiz "2    CANTOR DUST"
+choice_3: .asciiz "3    KOCH SNOWFLAKE CURVE"
 
 
 .text
-	jal drawsierpenski
+
+###############################################################################################
+#main menu
+#determines what procedure to jump to based off of user input
+main_menu:
+	
+	li      $a0, 125
+        li      $a1, 45
+        la      $a2, main_text_line_1
+        jal     OutText
+        
+        li      $a0, 45
+        li      $a1, 65
+        la      $a2, main_text_line_2
+        jal     OutText
+        
+        li      $a0, 45
+        li      $a1, 85
+        la      $a2, main_text_line_3
+        jal     OutText
+choices:
+	li $v0,12
+	syscall
+	sub $a0,$v0,48 #corrects the character to integer by subtracting 48
+	
+	beq $a0,1, drawsierpenski
+	beq $a0,2, drawdust
+	beq $a0,3, drawkoch
 	
 		
 
 exit_program:			#exits the program
 	li      $v0, 10
         syscall
+	
 
 
+###############################################################################################
+#draw sierpenski triangle
+# has no arguements as everything is calculated inside of the procedures located within
+drawsierpenski:
+	addiu $sp, $sp, -4
+	sw $ra, 4($sp)
+	#clears the screen
+	li $a0, 0
+	li $a1, 0
+	li $a2, 0
+	li $a3, 512
+	jal DrawBox
+	#main triangle
+	li $a0, 256
+	li $a1, 180
+	li $a2, 1
+	li $a3, 128
+	jal drawtriangle
+	
+	#three triangles the middle
+	#right
+	li $a0, 384
+	li $a1, 180
+	li $a2, 1
+	li $a3, 64
+	jal drawtriangle
+	#left
+	li $a0, 128
+	li $a1, 180
+	li $a2, 1
+	li $a3, 64
+	jal drawtriangle
+	#bottom
+	li $a0, 256
+	li $a1, 308
+	li $a2, 1
+	li $a3, 64
+	jal drawtriangle
+	
+	#triangles around the right
+	#right
+	li $a0, 448
+	li $a1, 180
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#left
+	li $a0, 320
+	li $a1, 180
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#bottom
+	li $a0, 384
+	li $a1, 244
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#triangles around the left
+	#right
+	li $a0, 192
+	li $a1, 180
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#left
+	li $a0, 64
+	li $a1, 180
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#bottom
+	li $a0, 128
+	li $a1, 244
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#triangles around the bottom
+	#right
+	li $a0, 320
+	li $a1, 308
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#left
+	li $a0, 192
+	li $a1, 308
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	#bottom
+	#bottom
+	li $a0, 256
+	li $a1, 372
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+	
+	li      $a0, 165
+        li      $a1, 10
+        la      $a2, triangle_text
+        jal     OutText
+        
+        li      $a0, 45
+        li      $a1, 45
+        la      $a2, triangle_text1
+        jal     OutText
+        
+        li      $a0, 45
+        li      $a1, 65
+        la      $a2, triangle_text2
+        jal     OutText
+        
+        li      $a0, 45
+        li      $a1, 85
+        la      $a2, triangle_text3
+        jal     OutText
+        
+        li      $a0, 45
+        li      $a1, 105
+        la      $a2, triangle_text4
+        jal     OutText
+	
+	li      $a0, 165
+        li      $a1, 125
+        la      $a2, triangle_text5
+        jal     OutText
+        
+	lw $ra,4($sp)
+	addiu $sp,$sp, 4
+	jr $ra
+
+
+###############################################################################################
+#draw cantor dust
+# has no arguements as everything is calculated inside of the procedures located within
+drawdust:
+	#clears the screen
+	li $a0, 0
+	li $a1, 0
+	li $a2, 0
+	li $a3, 512
+	jal DrawBox
+
+###############################################################################################
+#draw koch snowflake
+# has no arguements as everything is calculated inside of the procedures located within
+drawkoch:
+	#clears the screen
+	li $a0, 0
+	li $a1, 0
+	li $a2, 0
+	li $a3, 512
+	jal DrawBox
 
 #############################################################
 #calc address
@@ -313,102 +505,6 @@ TriangleLoop:
 	addiu $sp,$sp, 4
 	jr $ra
 	
-###############################################################################################
-#draw sierpenski
-drawsierpenski:
-	addiu $sp, $sp, -4
-	sw $ra, 4($sp)
-	#main triangle
-	li $a0, 256
-	li $a1, 180
-	li $a2, 1
-	li $a3, 128
-	jal drawtriangle
-	
-	#three triangles the middle
-	#right
-	li $a0, 384
-	li $a1, 180
-	li $a2, 1
-	li $a3, 64
-	jal drawtriangle
-	#left
-	li $a0, 128
-	li $a1, 180
-	li $a2, 1
-	li $a3, 64
-	jal drawtriangle
-	#bottom
-	li $a0, 256
-	li $a1, 308
-	li $a2, 1
-	li $a3, 64
-	jal drawtriangle
-	
-	#triangles around the right
-	#right
-	li $a0, 448
-	li $a1, 180
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#left
-	li $a0, 320
-	li $a1, 180
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#bottom
-	li $a0, 384
-	li $a1, 244
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#triangles around the left
-	#right
-	li $a0, 192
-	li $a1, 180
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#left
-	li $a0, 64
-	li $a1, 180
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#bottom
-	li $a0, 128
-	li $a1, 244
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#triangles around the bottom
-	#right
-	li $a0, 320
-	li $a1, 308
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#left
-	li $a0, 192
-	li $a1, 308
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	#bottom
-	#bottom
-	li $a0, 256
-	li $a1, 372
-	li $a2, 1
-	li $a3, 32
-	jal drawtriangle
-	
-	
-	lw $ra,4($sp)
-	addiu $sp,$sp, 4
-	jr $ra
-	
 draw_cantor_dust:
 	addiu $sp, $sp, -4
 	sw $ra, 4($sp)
@@ -419,30 +515,6 @@ draw_cantor_dust:
 	lw $ra,4($sp)
 	addiu $sp,$sp, 4
 	jr $ra
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -466,7 +538,7 @@ _text1:
         la      $t9, 0x10040000 # get the memory start address
         sll     $t0, $a0, 2     # assumes mars was configured as 512 x 512 number will change based off your display 
         addu    $t9, $t9, $t0   # and 1 pixel width, 1 pixel height
-        sll     $t0, $a1, 10    # (a0 * 4) + (a1 * 4 * 512) this is the only place you need to change anything if you are using a different display 
+        sll     $t0, $a1, 11    # (a0 * 4) + (a1 * 4 * 512) this is the only place you need to change anything if you are using a different display 
         addu    $t9, $t9, $t0   # t9 = memory address for this pixel
 
         move    $t2, $a2        # t2 = pointer to the text string
@@ -516,4 +588,19 @@ _text9:
         lw      $ra, 20($sp)
         addiu   $sp, $sp, 24
         jr      $ra
+        
+########################################################################################	
+#waits 500 ms...will make more sense when displaying squares, for now just a place holder
+#wait function so that we can blink the boxes on the screen
+#########################################################################################
+wait500:
+	li $t0 500
+	li $v0,30
+	syscall
+	move $t1, $a0
+	wait500loop:
+		syscall
+		subu $t2, $a0,$t1
+		bltu $t2, $t0, wait500loop
+	jr $ra
 	
