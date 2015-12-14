@@ -215,11 +215,31 @@ drawsierpenski:
 	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
+	
 	#bottom
 	li $a0, 384
 	li $a1, 244
 	li $a2, 1
 	li $a3, 32
+	jal drawtriangle
+	#smaller triangles
+	#right
+	li $a0, 416
+	li $a1, 244
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#left
+	li $a0, 352
+	li $a1, 244
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#bottom
+	li $a0, 384
+	li $a1, 276
+	li $a2, 1
+	li $a3, 16
 	jal drawtriangle
 	
 	#triangles around the left
@@ -248,6 +268,7 @@ drawsierpenski:
 	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
+	
 	#left
 	li $a0, 64
 	li $a1, 180
@@ -267,17 +288,37 @@ drawsierpenski:
 	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
-	#left
+	#bottom
 	li $a0, 64
 	li $a1, 212 
 	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
+	
 	#bottom
 	li $a0, 128
 	li $a1, 244
 	li $a2, 1
 	li $a3, 32
+	jal drawtriangle
+	#smaller triangles
+	#right
+	li $a0, 160
+	li $a1, 244
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#left
+	li $a0, 96
+	li $a1, 244
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#bottom
+	li $a0, 128
+	li $a1, 276
+	li $a2, 1
+	li $a3, 16
 	jal drawtriangle
 	
 	
@@ -288,20 +329,79 @@ drawsierpenski:
 	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
+	#smaller triangles
+	#right
+	li $a0, 352
+	li $a1, 308
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#left
+	li $a0, 288
+	li $a1, 308
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#bottom
+	li $a0, 320
+	li $a1, 340
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	
 	#left
 	li $a0, 192
 	li $a1, 308
 	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
+	#smaller triangles
+	#right
+	li $a0, 224
+	li $a1, 308
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#left
+	li $a0, 160
+	li $a1, 308
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
 	#bottom
+	li $a0, 192
+	li $a1, 340
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+
 	#bottom
 	li $a0, 256
 	li $a1, 372
 	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
+	#smaller triangles
+	#right
+	li $a0, 288
+	li $a1, 372
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#left
+	li $a0, 224
+	li $a1, 372
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#bottom
+	li $a0, 256
+	li $a1, 404
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
 	
+	#display text on bitmap display
 	li      $a0, 165
         li      $a1, 10
         la      $a2, triangle_text
