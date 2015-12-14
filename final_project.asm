@@ -111,16 +111,17 @@ choices:
 	syscall
 	sub $a0,$v0,48 #corrects the character to integer by subtracting 48
 	
+	la $ra, main_menu
 	beq $a0,1, drawsierpenski
 	beq $a0,2, drawdust
 	beq $a0,3, drawkoch
+	j choices
 	
 		
 
 exit_program:			#exits the program
 	li      $v0, 10
         syscall
-	
 
 
 ###############################################################################################
@@ -169,11 +170,50 @@ drawsierpenski:
 	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
+	#smaller triangles
+	#right
+	li $a0, 480
+	li $a1, 180
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#left
+	li $a0, 416
+	li $a1, 180
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#bottom
+	li $a0, 448
+	li $a1, 212
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	
 	#left
 	li $a0, 320
 	li $a1, 180
 	li $a2, 1
 	li $a3, 32
+	jal drawtriangle
+	#smaller triangles
+	#right
+	li $a0, 352
+	li $a1, 180
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#left
+	li $a0, 288
+	li $a1, 180
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#bottom
+	li $a0, 320
+	li $a1, 212
+	li $a2, 1
+	li $a3, 16
 	jal drawtriangle
 	#bottom
 	li $a0, 384
@@ -181,6 +221,7 @@ drawsierpenski:
 	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
+	
 	#triangles around the left
 	#right
 	li $a0, 192
@@ -188,11 +229,49 @@ drawsierpenski:
 	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
+	#smaller triangles
+	#right
+	li $a0, 224
+	li $a1, 180
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#left
+	li $a0, 160
+	li $a1, 180
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#bottom
+	li $a0, 192
+	li $a1, 212
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
 	#left
 	li $a0, 64
 	li $a1, 180
 	li $a2, 1
 	li $a3, 32
+	jal drawtriangle
+	#smaller triangles
+	#left
+	li $a0, 32
+	li $a1, 180
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#right
+	li $a0, 96
+	li $a1, 180
+	li $a2, 1
+	li $a3, 16
+	jal drawtriangle
+	#left
+	li $a0, 64
+	li $a1, 212 
+	li $a2, 1
+	li $a3, 16
 	jal drawtriangle
 	#bottom
 	li $a0, 128
@@ -200,6 +279,8 @@ drawsierpenski:
 	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
+	
+	
 	#triangles around the bottom
 	#right
 	li $a0, 320
@@ -251,6 +332,16 @@ drawsierpenski:
         la      $a2, triangle_text5
         jal     OutText
         
+        li $v0,12
+	syscall
+	
+	#clears the screen
+	li $a0, 0
+	li $a1, 0
+	li $a2, 0
+	li $a3, 512
+	jal DrawBox
+	
 	lw $ra,4($sp)
 	addiu $sp,$sp, 4
 	jr $ra
@@ -266,6 +357,26 @@ drawdust:
 	li $a2, 0
 	li $a3, 512
 	jal DrawBox
+	
+	
+	#draws the first box (largest)
+	li $a0, 192
+	li $a1, 50
+	li $a2, 4
+	li $a3, 128
+	jal DrawBox
+	
+	li $v0,12
+	syscall
+	
+	#clears the screen
+	li $a0, 0
+	li $a1, 0
+	li $a2, 4
+	li $a3, 512
+	jal DrawBox
+	
+	jr $ra
 
 ###############################################################################################
 #draw koch snowflake
@@ -277,6 +388,18 @@ drawkoch:
 	li $a2, 0
 	li $a3, 512
 	jal DrawBox
+	
+	li $v0,12
+	syscall
+	
+	#clears the screen
+	li $a0, 0
+	li $a1, 0
+	li $a2, 0
+	li $a3, 512
+	jal DrawBox
+	
+	jr $ra
 
 #############################################################
 #calc address
