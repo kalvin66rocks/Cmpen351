@@ -77,6 +77,17 @@ triangle_text2: .asciiz "TRIANGLE THEN DRAWING THREE TRIANGLES AROUND"
 triangle_text3: .asciiz "IT THAT ARE 1/3 OF THE SIZE REPEATING THIS "
 triangle_text4: .asciiz "UNTIL THE SUB TRIANGLES ARE TOO SMALL TO SEE "
 triangle_text5: .asciiz "PRESS 1 TO CONTINUE "
+dust_text: .asciiz "CANTOR DUST"
+dust_text1: .asciiz "CANTOR DUST  IS A "
+dust_text2: .asciiz "FRACTAL THAT IS "
+dust_text3: .asciiz "MADE BY DRAWING "
+dust_text4: .asciiz "  SQUARE THEN "
+dust_text5: .asciiz "DRAWING 4 SMALLER "
+dust_text6: .asciiz "SQUARES EACH 1/4 OF"
+dust_text7: .asciiz "THE SIZE OF THE"
+dust_text8: .asciiz "ORIGINAL IN THE 4 "
+dust_text9: .asciiz "CORNERS THIS"
+dust_text10: .asciiz "REPEATS INFINITELY "
 main_text_line_1: .asciiz " WELCOME TO MY FRACTAL VIEWER"
 main_text_line_2: .asciiz "PLEASE HIT THE NUMBER CORRESPONDING TO"    
 main_text_line_3: .asciiz "THE FRACTAL THAT YOU WOULD LIKE TO SEE"
@@ -112,15 +123,33 @@ main_menu:
         la      $a2, choice_1
         jal     OutText
         
+        #draws a triangle
+        li $a0, 375
+	li $a1, 180
+	li $a2, 1
+	li $a3, 32
+	jal drawtriangle
+        
         li      $a0, 105
         li      $a1, 245
         la      $a2, choice_2
         jal     OutText
         
+        #draws a square
+        li $a0, 275
+	li $a1, 265
+	li $a2, 4
+	li $a3, 32
+	jal DrawBox
+        
         li      $a0, 105
         li      $a1, 325
         la      $a2, choice_3
         jal     OutText
+        
+        #draws a piece of the curve
+        
+        
 choices:
 	li $v0,12
 	syscall
@@ -162,19 +191,16 @@ drawsierpenski:
 	#right
 	li $a0, 384
 	li $a1, 180
-	li $a2, 1
 	li $a3, 64
 	jal drawtriangle
 	#left
 	li $a0, 128
 	li $a1, 180
-	li $a2, 1
 	li $a3, 64
 	jal drawtriangle
 	#bottom
 	li $a0, 256
 	li $a1, 308
-	li $a2, 1
 	li $a3, 64
 	jal drawtriangle
 	
@@ -182,78 +208,66 @@ drawsierpenski:
 	#right
 	li $a0, 448
 	li $a1, 180
-	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
 	#smaller triangles
 	#right
 	li $a0, 480
 	li $a1, 180
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#left
 	li $a0, 416
 	li $a1, 180
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#bottom
 	li $a0, 448
 	li $a1, 212
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	
 	#left
 	li $a0, 320
 	li $a1, 180
-	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
 	#smaller triangles
 	#right
 	li $a0, 352
 	li $a1, 180
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#left
 	li $a0, 288
 	li $a1, 180
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#bottom
 	li $a0, 320
 	li $a1, 212
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	
 	#bottom
 	li $a0, 384
 	li $a1, 244
-	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
 	#smaller triangles
 	#right
 	li $a0, 416
 	li $a1, 244
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#left
 	li $a0, 352
 	li $a1, 244
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#bottom
 	li $a0, 384
 	li $a1, 276
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	
@@ -261,66 +275,56 @@ drawsierpenski:
 	#right
 	li $a0, 192
 	li $a1, 180
-	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
 	#smaller triangles
 	#right
 	li $a0, 224
 	li $a1, 180
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#left
 	li $a0, 160
 	li $a1, 180
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#bottom
 	li $a0, 192
 	li $a1, 212
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	
 	#left
 	li $a0, 64
 	li $a1, 180
-	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
 	#smaller triangles
 	#left
 	li $a0, 32
 	li $a1, 180
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#right
 	li $a0, 96
 	li $a1, 180
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#bottom
 	li $a0, 64
-	li $a1, 212 
-	li $a2, 1
+	li $a1, 212
 	li $a3, 16
 	jal drawtriangle
 	
 	#bottom
 	li $a0, 128
 	li $a1, 244
-	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
 	#smaller triangles
 	#right
 	li $a0, 160
 	li $a1, 244
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#left
@@ -332,7 +336,6 @@ drawsierpenski:
 	#bottom
 	li $a0, 128
 	li $a1, 276
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	
@@ -341,78 +344,66 @@ drawsierpenski:
 	#right
 	li $a0, 320
 	li $a1, 308
-	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
 	#smaller triangles
 	#right
 	li $a0, 352
 	li $a1, 308
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#left
 	li $a0, 288
 	li $a1, 308
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#bottom
 	li $a0, 320
 	li $a1, 340
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	
 	#left
 	li $a0, 192
 	li $a1, 308
-	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
 	#smaller triangles
 	#right
 	li $a0, 224
 	li $a1, 308
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#left
 	li $a0, 160
 	li $a1, 308
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#bottom
 	li $a0, 192
 	li $a1, 340
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 
 	#bottom
 	li $a0, 256
 	li $a1, 372
-	li $a2, 1
 	li $a3, 32
 	jal drawtriangle
 	#smaller triangles
 	#right
 	li $a0, 288
 	li $a1, 372
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#left
 	li $a0, 224
 	li $a1, 372
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	#bottom
 	li $a0, 256
 	li $a1, 404
-	li $a2, 1
 	li $a3, 16
 	jal drawtriangle
 	
@@ -485,25 +476,21 @@ drawdust:
 	#top left
 	li $a0, 192
 	li $a1, 190
-	li $a2, 4
 	li $a3, 32
 	jal DrawBox
 	#top right
 	li $a0, 288
 	li $a1, 190
-	li $a2, 4
 	li $a3, 32
 	jal DrawBox
 	#bottom left
 	li $a0, 192
 	li $a1, 286
-	li $a2, 4
 	li $a3, 32
 	jal DrawBox
 	#bottom right
 	li $a0, 288
 	li $a1, 286
-	li $a2, 4
 	li $a3, 32
 	jal DrawBox
 	
@@ -511,25 +498,21 @@ drawdust:
 	#top left
 	li $a0, 192
 	li $a1, 330
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	#top right
 	li $a0, 216
 	li $a1, 330
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	#bottom left
 	li $a0, 192
 	li $a1, 354
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	#bottom right
 	li $a0, 216
 	li $a1, 354
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox	
 	
@@ -538,25 +521,21 @@ drawdust:
 	#top left
 	li $a0, 288
 	li $a1, 330
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	#top right
 	li $a0, 312
 	li $a1, 330
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	#bottom left
 	li $a0, 288
 	li $a1, 354
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	#bottom right
 	li $a0, 312
 	li $a1, 354
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	
@@ -564,25 +543,21 @@ drawdust:
 	#top left
 	li $a0, 192
 	li $a1, 450
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	#top right
 	li $a0, 216
 	li $a1, 450
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	#bottom left
 	li $a0, 192
 	li $a1, 474
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	#bottom right
 	li $a0, 216
 	li $a1, 474
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	
@@ -591,34 +566,72 @@ drawdust:
 	#top left
 	li $a0, 288
 	li $a1, 450
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	#top right
 	li $a0, 312
 	li $a1, 450
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	#bottom left
 	li $a0, 288
 	li $a1, 474
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	#bottom right
 	li $a0, 312
 	li $a1, 474
-	li $a2, 4
 	li $a3, 8
 	jal DrawBox
 	
 	
 	
+	li      $a0, 165
+        li      $a1, 10
+        la      $a2, dust_text
+        jal     OutText
+        
+        li      $a0, 10
+        li      $a1, 50
+        la      $a2, dust_text1
+        jal     OutText
+        
+        addiu 	$a1,$a1, 30
+        la      $a2, dust_text2
+        jal     OutText
 	
+	addiu 	$a1,$a1, 30
+        la      $a2, dust_text3
+        jal     OutText
 	
+	addiu 	$a1,$a1, 30
+        la      $a2, dust_text4
+        jal     OutText
+        
+        addiu 	$a1,$a1, 30
+        la      $a2, dust_text5
+        jal     OutText
 	
+	addiu 	$a1,$a1, 30
+        la      $a2, dust_text6
+        jal     OutText
+        
+        addiu 	$a1,$a1, 30
+        la      $a2, dust_text7
+        jal     OutText
+        
+        addiu 	$a1,$a1, 30
+        la      $a2, dust_text8
+        jal     OutText
 	
+	addiu 	$a1,$a1, 30
+        la      $a2, dust_text9
+        jal     OutText
+        
+        addiu 	$a1,$a1, 30
+        la      $a2, dust_text10
+        jal     OutText
+        
 	li $v0,12
 	syscall
 	
