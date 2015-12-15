@@ -77,12 +77,12 @@ triangle_text2: .asciiz "TRIANGLE THEN DRAWING THREE TRIANGLES AROUND"
 triangle_text3: .asciiz "IT THAT ARE 1/3 OF THE SIZE REPEATING THIS "
 triangle_text4: .asciiz "UNTIL THE SUB TRIANGLES ARE TOO SMALL TO SEE "
 triangle_text5: .asciiz "PRESS 1 TO CONTINUE "
-main_text_line_1: .asciiz " WELCOME TO MY FRACTAL DRAWER"
-main_text_line_2: .asciiz "PLEASE HIT THE NUMBER CORRESPONDING"    
-main_text_line_3: .asciiz "TO THE FRACTAL THAT YOU WOULD LIKE TO SEE"
+main_text_line_1: .asciiz " WELCOME TO MY FRACTAL VIEWER"
+main_text_line_2: .asciiz "PLEASE HIT THE NUMBER CORRESPONDING TO"    
+main_text_line_3: .asciiz "THE FRACTAL THAT YOU WOULD LIKE TO SEE"
 choice_1: .asciiz "1    SIERPINSKI TRIANGLE"	
 choice_2: .asciiz "2    CANTOR DUST"
-choice_3: .asciiz "3    KOCH SNOWFLAKE CURVE"
+choice_3: .asciiz "3    KOCH CURVE"
 
 
 .text
@@ -105,6 +105,21 @@ main_menu:
         li      $a0, 45
         li      $a1, 85
         la      $a2, main_text_line_3
+        jal     OutText
+        
+        li      $a0, 105
+        li      $a1, 165
+        la      $a2, choice_1
+        jal     OutText
+        
+        li      $a0, 105
+        li      $a1, 245
+        la      $a2, choice_2
+        jal     OutText
+        
+        li      $a0, 105
+        li      $a1, 325
+        la      $a2, choice_3
         jal     OutText
 choices:
 	li $v0,12
@@ -466,16 +481,155 @@ drawdust:
 	li $a3, 128
 	jal DrawBox
 	
+	#second largest boxes
+	#top left
+	li $a0, 192
+	li $a1, 190
+	li $a2, 4
+	li $a3, 32
+	jal DrawBox
+	#top right
+	li $a0, 288
+	li $a1, 190
+	li $a2, 4
+	li $a3, 32
+	jal DrawBox
+	#bottom left
+	li $a0, 192
+	li $a1, 286
+	li $a2, 4
+	li $a3, 32
+	jal DrawBox
+	#bottom right
+	li $a0, 288
+	li $a1, 286
+	li $a2, 4
+	li $a3, 32
+	jal DrawBox
+	
+	#4 in top left
+	#top left
+	li $a0, 192
+	li $a1, 330
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	#top right
+	li $a0, 216
+	li $a1, 330
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	#bottom left
+	li $a0, 192
+	li $a1, 354
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	#bottom right
+	li $a0, 216
+	li $a1, 354
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox	
+	
+	
+	#4 in top right
+	#top left
+	li $a0, 288
+	li $a1, 330
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	#top right
+	li $a0, 312
+	li $a1, 330
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	#bottom left
+	li $a0, 288
+	li $a1, 354
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	#bottom right
+	li $a0, 312
+	li $a1, 354
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	
+	#4 in bottom left
+	#top left
+	li $a0, 192
+	li $a1, 450
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	#top right
+	li $a0, 216
+	li $a1, 450
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	#bottom left
+	li $a0, 192
+	li $a1, 474
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	#bottom right
+	li $a0, 216
+	li $a1, 474
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	
+	
+	#4 in bottom right
+	#top left
+	li $a0, 288
+	li $a1, 450
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	#top right
+	li $a0, 312
+	li $a1, 450
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	#bottom left
+	li $a0, 288
+	li $a1, 474
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	#bottom right
+	li $a0, 312
+	li $a1, 474
+	li $a2, 4
+	li $a3, 8
+	jal DrawBox
+	
+	
+	
+	
+	
+	
+	
 	li $v0,12
 	syscall
 	
 	#clears the screen
 	li $a0, 0
 	li $a1, 0
-	li $a2, 4
+	li $a2, 0
 	li $a3, 512
 	jal DrawBox
 	
+	la $ra, main_menu
 	jr $ra
 
 ###############################################################################################
