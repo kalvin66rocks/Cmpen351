@@ -112,6 +112,7 @@ main_text_line_3: .asciiz "THE FRACTAL THAT YOU WOULD LIKE TO SEE"
 choice_1: .asciiz "1    SIERPINSKI TRIANGLE"	
 choice_2: .asciiz "2    CANTOR DUST"
 choice_3: .asciiz "3    KOCH CURVE"
+choice_4: .asciiz "4    EXIT"
 
 
 .text
@@ -197,6 +198,11 @@ main_menu:
 	li $a3, 64
 	jal HorzLine
         
+        li      $a0, 105
+        li      $a1, 405
+        la      $a2, choice_4
+        jal     OutText
+        
 choices:
 	li $v0,12
 	syscall
@@ -206,6 +212,7 @@ choices:
 	beq $a0,1, drawsierpenski
 	beq $a0,2, drawdust
 	beq $a0,3, drawkoch
+	beq $a0,4, exit_program
 	j main_menu
 	
 		
@@ -503,6 +510,7 @@ drawsierpenski:
 ###############################################################################################
 #draw cantor dust
 # has no arguements as everything is calculated inside of the procedures located within
+#outputs to the bitmap display
 drawdust:
 	#clears the screen
 	li $a0, 0
@@ -714,8 +722,9 @@ drawdust:
 	jr $ra
 
 ###############################################################################################
-#draw koch snowflake
-# has no arguements as everything is calculated inside of the procedures located within
+#draw koch curve
+#has no arguements as everything is calculated inside of the procedures located within
+#outputs to the bitmap display
 drawkoch:
 	#clears the screen
 	li $a0, 0
@@ -1391,8 +1400,6 @@ drawkoch:
 	li $a2, 0
 	li $a3, 512
 	jal DrawBox
-######################################################################################################	
-######################################################################################################	
 	#second iteration
 	#this iteration will have 4 additional 60 degree turns in it
 	
@@ -2610,6 +2617,8 @@ getcolor:
 	jr $ra
 #############################################################
 #draw a dot
+#takes in location x $a0, and y $a1 and draws a dot of color $a2 there
+#outputs to the bitmap display
 #############################################################
 drawdot:
 	addiu $sp,$sp, -8
@@ -2628,6 +2637,8 @@ drawdot:
 
 #############################################################
 #draw a horizontal line
+#takes in a starting position of ($a0, $a1) (x,y) and draws a line of length $a2 and color $a3
+#outputs to the bitmap display
 #############################################################
 HorzLine:
 	addiu $sp,$sp, -4
@@ -2652,6 +2663,8 @@ HorzLoop:
 	
 #############################################################
 #draw a vertical line
+#takes in a starting position of ($a0, $a1) (x,y) and draws a line of length $a2 and color $a3
+#outputs to the bitmap display
 #############################################################
 VertLine:
 	addiu $sp,$sp, -4
@@ -2676,6 +2689,8 @@ VertLoop:
 
 #############################################################
 #draw a box
+#takes in a starting position of ($a0, $a1) (x,y) and draws a box of size $a2 and color $a3
+#outputs to the bitmap display
 #############################################################
 DrawBox:
 	add $s2, $a3, 0
@@ -2699,36 +2714,12 @@ BoxLoop:
 	lw $ra, 4($sp)
 	addiu $sp,$sp, 4
 	jr $ra
-###############################################################
-#draw lines
-###############################################################
-DrawLines:
-	addiu $sp, $sp, -4
-	sw $ra, 4($sp)
-	
-	li $a0, 0
-	li $a1, 16
-	li $a2, 7
-	li $a3, 32
-	jal HorzLine
-	
-	li $a0, 16
-	li $a1, 0
-	li $a2, 7
-	li $a3, 32
-	jal VertLine
-	
-	li $a0, 0
-	li $a1, 0
-	li $a2, 0
-	li $a3, 0
-	
-	lw $ra, 4($sp)
-	addiu $sp, $sp, 4
-	jr $ra
+
 	
 ###################################################################
 #draw a diagonal line Down
+#takes in a starting position of ($a0, $a1) (x,y) and draws a line of length $a2 and color $a3
+#outputs to the bitmap display
 ################################################################
 DiagLineDown:
 	addiu $sp,$sp, -4
@@ -2752,6 +2743,8 @@ DiagLoopDown:
 	jr $ra
 ################################################################
 #draw a diagonal line Up
+#takes in a starting position of ($a0, $a1) (x,y) and draws a line of length $a2 and color $a3
+#outputs to the bitmap display
 ################################################################
 DiagLineUp:
 	addiu $sp,$sp, -4
@@ -2778,6 +2771,8 @@ DiagLoopUp:
 	
 ##########################################################################################
 # draw a triangle
+#takes in a starting position of ($a0, $a1) (x,y) and draws a triangle with side lengths of $a2 and color $a3
+#outputs to the bitmap display
 ##########################################################################################
 drawtriangle:
 	addiu $sp,$sp, -4
@@ -2811,20 +2806,6 @@ TriangleLoop:
 	lw $ra, 4($sp)
 	addiu $sp,$sp, 4
 	jr $ra
-	
-draw_cantor_dust:
-	addiu $sp, $sp, -4
-	sw $ra, 4($sp)
-
-
-	
-
-	lw $ra,4($sp)
-	addiu $sp,$sp, 4
-	jr $ra
-
-
-
 
 
 
